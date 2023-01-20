@@ -49,7 +49,6 @@
 - [Jose Andres Ridruejo][email-pepe]
 - [Sergio Herreros Perez][email-sergio]
 
-[percebe]: https://media.istockphoto.com/id/481744887/es/vector/bernacle-de-historieta.jpg?s=612x612&w=0&k=20&c=B6CLMDs_ELFGzMQTYQ73P9xVe_XvFIe--j27TeAeZ28=
 [api-url]: https://sportsdata.io/developers/api-documentation/nba
 [email-gomi]: mailto:gomimaster1@gmail.com
-[email-pepe]: mailto:gomimaster1@gmail.com
+[email-pepe]: mailto:pepert03@gmail.com
