@@ -34,8 +34,24 @@
 
 ## About This Project
 
-<!-- Latex equation -->
-$$ \frac{dE}{d\textbf{x}} = \frac{2}{N}*(\textbf{a}-\textbf{y})\odot{\textbf{a}'} $$
+Notation:
+- $\bar{X}$: Dataset input (matrix)
+- $\bar{Y}$: Dataset output (matrix)
+
+- $\bar{x}$: Input of the layer (vector)
+- $\bar{y}$: Output of the layer (vector)
+- $\bar{W}$: Weights of the layer (matrix)
+
+- $\bar{a}$: Activation function (vector)
+
+### Imputed Error (last layer)
+$$ \frac{\partial{E}}{\partial{\bar{x}}} = \frac{2}{N}*(\bar{a}-\bar{y})\odot{\bar{a}'} $$
+
+### Parameter update
+$$ \frac{\partial{E}}{\partial{\bar{w}}} = \frac{\partial{E}}{\partial{\bar{x}}}\bar{x}^T $$
+
+### Imputed Error (hidden layer)
+$$ \frac{\partial{E}}{\partial{\bar{x}}} = W^t\frac{\partial{E}}{\partial{\bar{y}}} $$
 
 ## Getting Started
 
