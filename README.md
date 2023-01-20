@@ -19,12 +19,12 @@
 ## Table of Contents
 
 - [About this Project](#about-this-project)
-    - [Descripción](#descripción)
-    - [Foto resumen](#foto-resumen)
-    - [Creacion de dataset](#creacion-de-dataset)
-    - [Clase Red Neuronal y Layer](#clase-red-neuronal)
-    - [Problema + Entrenamiento + Resultado](#entrenamiento)
-    - [Interfaz grafica](#interfaz-grafica)
+    - [Detailed Description](#detailed-description)
+    - [Dataset Creation](#dataset-creation)
+    - [Basic Layers](#basic-layers)
+    - [Neural Network](#neural-network)
+    - [MNIST/LETTERS + Training + Result](#entrenamiento)
+    - [Interface](#interfaz-grafica)
 
 - [Getting Started](#getting-started)
     - [Installation](#installation)
@@ -34,21 +34,21 @@
 
 ## About This Project
 
+<!-- Latex equation -->
+$$ \frac{dE}{d\textbf{x}} = \frac{2}{N}*(\textbf{a}-\textbf{y})\odot{\textbf{a}'} $$
 
 ## Getting Started
 
-
 ### Installation
-
 
 ## Usage
 
 
 ## Contact
 
-- [Jose Andres Ridruejo][email-pepe]
-- [Sergio Herreros Perez][email-sergio]
+- [José Ridruejo][email-pepe]
+- [Sergio Herreros Pérez][email-gomi]
 
-[api-url]: https://sportsdata.io/developers/api-documentation/nba
+
 [email-gomi]: mailto:gomimaster1@gmail.com
 [email-pepe]: mailto:pepert03@gmail.com
