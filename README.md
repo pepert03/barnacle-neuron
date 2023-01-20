@@ -1,10 +1,8 @@
 [![made-with-python](https://img.shields.io/badge/Made%20with-Python-informational?style=flat-square)](https://www.python.org/)
-[![made-with-airflow](https://img.shields.io/badge/Made%20with-Airflow-informational?style=flat-square)](https://airflow.apache.org/)
-[![made-with-docker](https://img.shields.io/badge/Made%20with-Docker-informational?style=flat-square)](https://www.docker.com/)
-[![made-with-fpdf2](https://img.shields.io/badge/Made%20with-FPDF2-informational?style=flat-square)](https://pypi.org/project/fpdf2/)
+[![made-with-pygame](https://img.shields.io/badge/Made%20with-Pygame-informational?style=flat-square)](https://www.pygame.org/)
 
 <div align="left">
-  <img src="https://www.edigitalagency.com.au/wp-content/uploads/NBA-logo-png.png" alt="Logo" width="300">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/c/c2/MultiLayerNeuralNetworkBigger_english.png" alt="Logo" width="300">
 </div>
 
 # The Barnacle Neuron
