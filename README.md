@@ -79,17 +79,13 @@ We will take advantage of the modular approach of the neural network to define t
     - **Backward Propagation**:   
         - **Parameter update**:
             For each weight $w_{ij}$, we have to calculate the partial derivative of the error with respect to that weight. Using the chain rule, we have:
-            $$
-            \frac{\partial{E}}{\partial{w_{ij}}} = 
+            $$\frac{\partial{E}}{\partial{w_{ij}}} = 
             \frac{\partial{E}}{\partial{\bar{y_i}}} \frac{\partial{\bar{y_i}}}{\partial{w_{ij}}} =
-            \frac{\partial{E}}{\partial{\bar{y_i}}}\bar{x_j}
-            $$
+            \frac{\partial{E}}{\partial{\bar{y_i}}}\bar{x_j}$$
             And for each bias $b_i$:
-            $$
-            \frac{\partial{E}}{\partial{b_i}} = 
+            $$\frac{\partial{E}}{\partial{b_i}} = 
             \frac{\partial{E}}{\partial{\bar{y_i}}}\frac{\partial{\bar{y_i}}}{\partial{b_i}} = 
-            \frac{\partial{E}}{\partial{\bar{y_i}}}\cdot{1}
-            $$
+            \frac{\partial{E}}{\partial{\bar{y_i}}}\cdot{1}$$
             Extrapolating to matrix notation:
             $$\frac{\partial{E}}{\partial{\bar{W}}} = \frac{\partial{E}}{\partial{\bar{y}}}\bar{x}^T$$
             $$\frac{\partial{E}}{\partial{\bar{b}}} = \frac{\partial{E}}{\partial{\bar{y}}}$$
@@ -101,14 +97,11 @@ We will take advantage of the modular approach of the neural network to define t
         
         - **Imputed Error**:
             This time, since $x_i$ is distributed in all the neurons of the next layer, we have to sum all the partial derivatives of the next layer with respect to $x_i$:
-            $$
-            \frac{\partial{E}}{\partial{x_i}} = 
+            $$\frac{\partial{E}}{\partial{x_i}} = 
             \sum_{j}\frac{\partial{E}}{\partial{y_j}}\frac{\partial{y_j}}{\partial{x_i}} = 
-            \sum_{j}\frac{\partial{E}}{\partial{y_j}}w_{ji}
-            $$
+            \sum_{j}\frac{\partial{E}}{\partial{y_j}}w_{ji}$$
             Extrapolating to matrix notation:
-            $$
-            \frac{\partial{E}}{\partial{\bar{x}}} = 
+            $$\frac{\partial{E}}{\partial{\bar{x}}} = 
             \begin{bmatrix} 
             \frac{\partial{E}}{\partial{x_1}} \\ 
             \frac{\partial{E}}{\partial{x_2}} \\
@@ -132,8 +125,7 @@ We will take advantage of the modular approach of the neural network to define t
             \frac{\partial{E}}{\partial{y_2}} \\
             \vdots \\
             \frac{\partial{E}}{\partial{y_m}}
-            \end{bmatrix}
-            $$
+            \end{bmatrix}$$
 
             $$\frac{\partial{E}}{\partial{\bar{x}}} = W^t\frac{\partial{E}}{\partial{\bar{y}}}$$
 
@@ -145,16 +137,12 @@ We will take advantage of the modular approach of the neural network to define t
     - **Backward Propagation**:   
         - **Imputed Error**:
             For each neuron $x_i$, we have to calculate the partial derivative of the error with respect to that neuron. Using the chain rule, we have:
-            $$
-            \frac{\partial{E}}{\partial{\bar{x_i}}} =
+            $$\frac{\partial{E}}{\partial{\bar{x_i}}} =
             \frac{\partial{E}}{\partial{\bar{y_i}}}\frac{\partial{\bar{y_i}}}{\partial{\bar{x_i}}} =
-            \frac{\partial{E}}{\partial{\bar{y_i}}}a'(\bar{x_i})
-            $$
+            \frac{\partial{E}}{\partial{\bar{y_i}}}a'(\bar{x_i})$$
             Extrapolating to matrix notation:
-            $$
-            \frac{\partial{E}}{\partial{\bar{x}}} =
-            \frac{\partial{E}}{\partial{\bar{y}}}\odot{\bar{a}'}
-            $$
+            $$\frac{\partial{E}}{\partial{\bar{x}}} =
+            \frac{\partial{E}}{\partial{\bar{y}}}\odot{\bar{a}'}$$
 
 ## Getting Started
 Use the following instructions to get a copy of the project up and running on your local machine.
