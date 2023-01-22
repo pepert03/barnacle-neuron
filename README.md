@@ -62,21 +62,23 @@ We will take advantage of the modular approach of the neural network to define t
 
 1. **Dense Layer**
 
-    - **Forward Propagation**:    $ \bar{y} = \bar{W}\bar{x} $
-    - **Backward Propagation**:
-
-
-#### Imputed Error (last layer)
-$$ \frac{\partial{E}}{\partial{\bar{x}}} = \frac{2}{N}*(\bar{a}-\bar{y})\odot{\bar{a}'} $$
-
-#### Parameter update (dense layer)
-$$ \frac{\partial{E}}{\partial{\bar{w}}} = \frac{\partial{E}}{\partial{\bar{x}}}\bar{x}^T $$
-
-#### Imputed Error (dense layer)
-$$ \frac{\partial{E}}{\partial{\bar{x}}} = W^t\frac{\partial{E}}{\partial{\bar{y}}} $$
-
-#### Imputed Error (activation layer)
-$$ \frac{\partial{E}}{\partial{\bar{x}}} = \frac{\partial{E}}{\partial{\bar{y}}}\odot{\bar{a}'} $$
+    - **Forward Propagation**:    $$ \bar{y} = \bar{W}\bar{x} $$
+    - **Backward Propagation**:   
+        - **Parameter update**:
+        
+        For each weight $w_{ij}$, we have:
+        $ \frac{\partial{E}}{\partial{w_{ij}}} = \frac{\partial{E}}{\partial{\bar{y_i}}}\frac{\partial{\bar{y_i}}}{\partial{w_{ij}}} = \frac{\partial{E}}{\partial{\bar{y_i}}}\bar{x_j} $
+        Given that the error is a function of all the weights, we can write:
+        $$ \frac{\partial{E}}{\partial{\bar{W}}} = \frac{\partial{E}}{\partial{\bar{y}}}\bar{x}^T $$
+        $$ \bar{W} = \bar{W} - \alpha\frac{\partial{E}}{\partial{\bar{W}}} $$
+        
+        
+        - **Imputed Error**: $$ \frac{\partial{E}}{\partial{\bar{x}}} = W^t\frac{\partial{E}}{\partial{\bar{y}}} $$
+2. **Activation Layer**
+    
+    - **Forward Propagation**:    $$ \bar{a} = \bar{y} $$
+    - **Backward Propagation**:   
+        - **Imputed Error**: $$ \frac{\partial{E}}{\partial{\bar{x}}} = \frac{\partial{E}}{\partial{\bar{y}}}\odot{\bar{a}'} $$
 
 ## Getting Started
 
