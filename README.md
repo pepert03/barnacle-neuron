@@ -34,7 +34,13 @@ Tocrate the dataset, we've made a pygame interface that allows us to draw letter
 In order to achive translation, rotation and scaling invariance, we've used data augmentation techniques to expand the dataset.
 
 ### Neural Network
-We are going to use a modular approach to create the neural network. We are going to define 2 basic objects: the Layer and the NeuralNetwork.
+We are going to use a modular approach to create the NeuralNetwork class. Abstractly, the neural network will be a list of Layer objects, which will perform two main operations:
+
+1. **Forward Propagation**: Each layer will recieve an input and will calculate the output of the layer, feeding it to the next layer. The exception is the first layer, which will recieve the input from the user.
+
+2. **Backward Propagation**: Each layer $L_{i}$ will recieve the imputed error of the following layer, $L_{i+1}$, that is, the error with respect to the input of $L_{i+1}$, which is the same as the error with respect to the output of the $L_{i}$. The exception is the last layer, which will recieve the imputed error from our loss function.<br>
+In this project, we will be using the Log Loss function, which is defined as follows:<br>
+$ L = -\sum_{c=1}^My_{o,c}\log(p_{o,c}) $, where $M$ is the number of classes, $y_{o,c}$ is a binary indicator (0 or 1) if class label $c$ is the correct classification for observation $o$, and $p_{o,c}$ is the probability that observation $o$ is classified as class $c$.<br>
 
 ### Basic Layers
 The Layer class will consist of 3 main methods:
@@ -43,7 +49,7 @@ The Layer class will consist of 3 main methods:
 - **backward**: This method will calculate the imputed error of the layer given the imputed error of the next layer. It will also update the parameters of the layer if it is a trainable layer.
 
 This layer will be the base class for the other layers. We will define 2 basic layers for this project: the Dense layer and the Activation layer.  
-<br>
+
 Now we proceed to define the formulas needed in forward and backward propagation for each layer.  
 
 #### Notation:
@@ -80,10 +86,48 @@ $$ \frac{\partial{E}}{\partial{\bar{x}}} = W^t\frac{\partial{E}}{\partial{\bar{y
 $$ \frac{\partial{E}}{\partial{\bar{x}}} = \frac{\partial{E}}{\partial{\bar{y}}}\odot{\bar{a}'} $$
 
 ## Getting Started
+Use the following instructions to get a copy of the project up and running on your local machine.
 
 ### Installation
+1. Install the required libraries
+```
+pip install -r requirements.txt
+```
+2. Clone the repository
+```	
+git clone https://github.com/pepert03/barnacle-neuron.git
+```
 
-## Usage
+### Usage
+
+ - **Dataset Creation**
+    1. Run the dataset_ui.py file
+    2. Draw a letter or a number
+    3. Press the letter or number key to save the image
+    4. Repeat the process for all the letters and numbers
+    at least 100 images per letter/number.
+    5. Press the escape key to exit the program
+    6. Run the build_dataset.py file to create the dataset
+    feedable to the neural network
+    7. (Optional) Run the data_augmentation.py file to
+    create more images for the dataset.
+    
+- **Number / Letters Classification**
+    * **GUI**
+        1. Run the prediction_ui.py file
+        2. Draw a letter or a number
+        3. Number / letter will be highlited on the screen
+        4. Press 'enter' to clear the screen and draw another
+        5. Press the escape key to exit the program
+    * **Console**
+        1. Run the script predict.py. You can give a path to an image (png or jpg) or a path to a dataset (csv).  
+        Arguments:
+            - -i, --image: Path to the image to predict
+            - -d, --dataset: Path to the dataset to predict
+            - -m, --model: Path to the model to use
+            - -o, --output: Path to the output file
+            - -v, --verbose: Verbose mode  
+
 
 ## Contact
 
