@@ -47,6 +47,7 @@ $$ \frac{\partial{E}}{\partial{\bar{x}}} = W^t\frac{\partial{E}}{\partial{\bar{y
 
 ## Getting Started
 
+
 ### Installation
 
 ## Usage
