@@ -98,7 +98,7 @@ We will take advantage of the modular approach of the neural network to define t
             $$\frac{\partial{E}}{\partial{\bar{x}}}=\begin{bmatrix}\frac{\partial{E}}{\partial{x_1}}\\\frac{\partial{E}}{\partial{x_2}}\\\vdots\\ \frac{\partial{E}}{\partial{x_n}}\end{bmatrix}=\begin{bmatrix}\frac{\partial{E}}{\partial{y_1}}{w_{11}}+\frac{\partial{E}}{\partial{y_1}}{w_{21}}+\cdots+\frac{\partial{E}}{\partial{y_1}}{w_{m1}}\\\frac{\partial{E}}{\partial{y_2}}{w_{12}}+\frac{\partial{E}}{\partial{y_2}}{w_{22}}+\cdots+\frac{\partial{E}}{\partial{y_2}}{w_{m2}}\\\vdots\\\frac{\partial{E}}{\partial{y_m}}{w_{1n}}+\frac{\partial{E}}{\partial{y_m}}{w_{2n}}+\cdots+\frac{\partial{E}}{\partial{y_m}}{w_{mn}}\end{bmatrix}=\begin{bmatrix}w_{11}&w_{21}&\cdots&w_{m1}\\w_{12}&w_{22}&\cdots&w_{m2}\\\vdots&\vdots&\ddots&\vdots\\w_{1n}&w_{2n}&\cdots&w_{mn}\end{bmatrix}\begin{bmatrix}\frac{\partial{E}}{\partial{y_1}}\\\frac{\partial{E}}{\partial{y_2}}\\\vdots\\\frac{\partial{E}}{\partial{y_m}}\end{bmatrix}$$
             $$\frac{\partial{E}}{\partial{\bar{x}}} = W^t\frac{\partial{E}}{\partial{\bar{y}}}$$
 
-LaTeX matrix not rendering correctly on Github Markdown
+
 $\begin{bmatrix} u\\e \end{bmatrix}  \sim 
 N (\begin{bmatrix}0\\0\end{bmatrix},
 \begin{bmatrix} G(\sigma_g) &0\\ 0 &R(\sigma_{\gamma})\end{bmatrix})$
