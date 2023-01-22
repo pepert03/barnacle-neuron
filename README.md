@@ -99,9 +99,9 @@ We will take advantage of the modular approach of the neural network to define t
             $$\frac{\partial{E}}{\partial{\bar{x}}} = W^t\frac{\partial{E}}{\partial{\bar{y}}}$$
 
 LaTeX matrix not rendering correctly on Github Markdown
-$$\begin{bmatrix}X\\Y\end{bmatrix}$$
-solution:
-
+$\begin{bmatrix} u\\e \end{bmatrix}  \sim 
+N (\begin{bmatrix}0\\0\end{bmatrix},
+\begin{bmatrix} G(\sigma_g) &0\\ 0 &R(\sigma_{\gamma})\end{bmatrix})$
 
 2. **Activation Layer**
     
