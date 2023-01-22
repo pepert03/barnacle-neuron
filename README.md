@@ -63,7 +63,7 @@ We will take advantage of the modular approach of the neural network to define t
 1. **Dense Layer**
 
     - **Forward Propagation**:  
-    $$ \bar{y} = \bar{W}\bar{x} $$
+        * $ \bar{y} = \bar{W}\bar{x} $
     - **Backward Propagation**:
 
 
