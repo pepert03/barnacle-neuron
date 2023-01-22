@@ -73,13 +73,14 @@ We will take advantage of the modular approach of the neural network to define t
 1. **Dense Layer**
 
     - **Forward Propagation**:    
-        $$ y_i = w_{i1}x_1 + w_{i2}x_2 + \cdots + w_{in}x_n + b_i = \sum_{j}w_{ij}x_j + b_i $$
-        $$ \bar{y} = \bar{W}\bar{x} + \bar{b} $$
+        $$y_i = w_{i1}x_1 + w_{i2}x_2 + \cdots + w_{in}x_n + b_i = \sum_{j}w_{ij}x_j + b_i $$
+        $$ \bar{y} = \bar{W}\bar{x} + \bar{b}$$
 
     - **Backward Propagation**:   
         - **Parameter update**:
             For each weight $w_{ij}$, we have to calculate the partial derivative of the error with respect to that weight. Using the chain rule, we have:
-            $$ \frac{\partial{E}}{\partial{w_{ij}}} = \frac{\partial{E}}{\partial{\bar{y_i}}}\frac{\partial{\bar{y_i}}}{\partial{w_{ij}}} = \frac{\partial{E}}{\partial{\bar{y_i}}}\bar{x_j} $$
+            $$ \frac{\partial{E}}{\partial{w_{ij}}} = \frac{\partial{E}}{\partial{\bar{y_i}}}
+            \frac{\partial{\bar{y_i}}}{\partial{w_{ij}}} = \frac{\partial{E}}{\partial{\bar{y_i}}}\bar{x_j} $$
             And for each bias $b_i$:
             $$ \frac{\partial{E}}{\partial{b_i}} = \frac{\partial{E}}{\partial{\bar{y_i}}}\frac{\partial{\bar{y_i}}}{\partial{b_i}} = \frac{\partial{E}}{\partial{\bar{y_i}}}\cdot 1 $$
             Extrapolating to matrix notation:
