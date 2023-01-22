@@ -95,9 +95,7 @@ We will take advantage of the modular approach of the neural network to define t
             This time, since $x_i$ is distributed in all the neurons of the next layer, we have to sum all the partial derivatives of the next layer with respect to $x_i$:
             $$\frac{\partial{E}}{\partial{x_i}} = \sum_{j}\frac{\partial{E}}{\partial{y_j}}\frac{\partial{y_j}}{\partial{x_i}} = \sum_{j}\frac{\partial{E}}{\partial{y_j}}w_{ji}$$
             Extrapolating to matrix notation:
-            
             $$\frac{\partial{E}}{\partial{\bar{x}}}=\begin{bmatrix}\frac{\partial{E}}{\partial{x_1}}\\\frac{\partial{E}}{\partial{x_2}}\\\vdots\\ \frac{\partial{E}}{\partial{x_n}}\end{bmatrix}=\begin{bmatrix}\frac{\partial{E}}{\partial{y_1}}{w_{11}}+\frac{\partial{E}}{\partial{y_1}}{w_{21}}+\cdots+\frac{\partial{E}}{\partial{y_1}}{w_{m1}}\\\frac{\partial{E}}{\partial{y_2}}{w_{12}}+\frac{\partial{E}}{\partial{y_2}}{w_{22}}+\cdots+\frac{\partial{E}}{\partial{y_2}}{w_{m2}}\\\vdots\\\frac{\partial{E}}{\partial{y_m}}{w_{1n}}+\frac{\partial{E}}{\partial{y_m}}{w_{2n}}+\cdots+\frac{\partial{E}}{\partial{y_m}}{w_{mn}}\end{bmatrix}=\begin{bmatrix}w_{11}&w_{21}&\cdots&w_{m1}\\w_{12}&w_{22}&\cdots&w_{m2}\\\vdots&\vdots&\ddots&\vdots\\w_{1n}&w_{2n}&\cdots&w_{mn}\end{bmatrix}\begin{bmatrix}\frac{\partial{E}}{\partial{y_1}}\\\frac{\partial{E}}{\partial{y_2}}\\\vdots\\\frac{\partial{E}}{\partial{y_m}}\end{bmatrix}$$
-
             $$\frac{\partial{E}}{\partial{\bar{x}}} = W^t\frac{\partial{E}}{\partial{\bar{y}}}$$
 
 2. **Activation Layer**
