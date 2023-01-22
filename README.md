@@ -72,67 +72,89 @@ We will take advantage of the modular approach of the neural network to define t
 
 1. **Dense Layer**
 
-    - **Forward Propagation**:    
+    - **Forward Propagation**:
         $$y_i = w_{i1}x_1 + w_{i2}x_2 + \cdots + w_{in}x_n + b_i = \sum_{j}w_{ij}x_j + b_i $$
-        $$ \bar{y} = \bar{W}\bar{x} + \bar{b}$$
+        $$\bar{y} = \bar{W}\bar{x} + \bar{b}$$
 
     - **Backward Propagation**:   
         - **Parameter update**:
             For each weight $w_{ij}$, we have to calculate the partial derivative of the error with respect to that weight. Using the chain rule, we have:
-            $$ \frac{\partial{E}}{\partial{w_{ij}}} = \frac{\partial{E}}{\partial{\bar{y_i}}}
-            \frac{\partial{\bar{y_i}}}{\partial{w_{ij}}} = \frac{\partial{E}}{\partial{\bar{y_i}}}\bar{x_j} $$
+            $$
+            \frac{\partial{E}}{\partial{w_{ij}}} = 
+            \frac{\partial{E}}{\partial{\bar{y_i}}} \frac{\partial{\bar{y_i}}}{\partial{w_{ij}}} =
+            \frac{\partial{E}}{\partial{\bar{y_i}}}\bar{x_j}
+            $$
             And for each bias $b_i$:
-            $$ \frac{\partial{E}}{\partial{b_i}} = \frac{\partial{E}}{\partial{\bar{y_i}}}\frac{\partial{\bar{y_i}}}{\partial{b_i}} = \frac{\partial{E}}{\partial{\bar{y_i}}}\cdot 1 $$
+            $$
+            \frac{\partial{E}}{\partial{b_i}} = 
+            \frac{\partial{E}}{\partial{\bar{y_i}}}\frac{\partial{\bar{y_i}}}{\partial{b_i}} = 
+            \frac{\partial{E}}{\partial{\bar{y_i}}}\cdot{1}
+            $$
             Extrapolating to matrix notation:
-            $$ \frac{\partial{E}}{\partial{\bar{W}}} = \frac{\partial{E}}{\partial{\bar{y}}}\bar{x}^T $$
-            $$ \frac{\partial{E}}{\partial{\bar{b}}} = \frac{\partial{E}}{\partial{\bar{y}}} $$
+            $$\frac{\partial{E}}{\partial{\bar{W}}} = \frac{\partial{E}}{\partial{\bar{y}}}\bar{x}^T$$
+            $$\frac{\partial{E}}{\partial{\bar{b}}} = \frac{\partial{E}}{\partial{\bar{y}}}$$
             Then, we update the weights and the bias using the gradient descent algorithm:
-            $$ \bar{W} = \bar{W} - \alpha\frac{\partial{E}}{\partial{\bar{W}}} $$
-            $$ \bar{b} = \bar{b} - \alpha\frac{\partial{E}}{\partial{\bar{b}}} $$
+            $$\bar{W} = \bar{W} - \alpha\frac{\partial{E}}{\partial{\bar{W}}}$$
+            $$\bar{b} = \bar{b} - \alpha\frac{\partial{E}}{\partial{\bar{b}}}$$
             Where $\alpha$ is the learning rate.
         
         
         - **Imputed Error**:
             This time, since $x_i$ is distributed in all the neurons of the next layer, we have to sum all the partial derivatives of the next layer with respect to $x_i$:
-            $$ \frac{\partial{E}}{\partial{\bar{x_i}}} = \sum_{j}\frac{\partial{E}}{\partial{\bar{y_j}}}\frac{\partial{\bar{y_j}}}{\partial{\bar{x_i}}} = \sum_{j}\frac{\partial{E}}{\partial{\bar{y_j}}}\bar{w_{ji}} $$
+            $$
+            \frac{\partial{E}}{\partial{x_i}} = 
+            \sum_{j}\frac{\partial{E}}{\partial{y_j}}\frac{\partial{y_j}}{\partial{x_i}} = 
+            \sum_{j}\frac{\partial{E}}{\partial{y_j}}w_{ji}
+            $$
             Extrapolating to matrix notation:
-            $$ \frac{\partial{E}}{\partial{\bar{x}}} = \begin{bmatrix} 
-            \frac{\partial{E}}{\partial{\bar{x_1}}} \\ 
-            \frac{\partial{E}}{\partial{\bar{x_2}}} \\
+            $$
+            \frac{\partial{E}}{\partial{\bar{x}}} = 
+            \begin{bmatrix} 
+            \frac{\partial{E}}{\partial{x_1}} \\ 
+            \frac{\partial{E}}{\partial{x_2}} \\
             \vdots \\
-            \frac{\partial{E}}{\partial{\bar{x_n}}} 
-            \end{bmatrix}
-            = \begin{bmatrix}
-            \frac{\partial{E}}{\partial{\bar{y_1}}}{w_{11}} + \frac{\partial{E}}{\partial{\bar{y_1}}}{w_{21}} + \cdots + \frac{\partial{E}}{\partial{\bar{y_1}}}{w_{m1}} \\
-            \frac{\partial{E}}{\partial{\bar{y_2}}}{w_{12}} + \frac{\partial{E}}{\partial{\bar{y_2}}}{w_{22}} + \cdots + \frac{\partial{E}}{\partial{\bar{y_2}}}{w_{m2}} \\
+            \frac{\partial{E}}{\partial{x_n}} 
+            \end{bmatrix} =
+            \begin{bmatrix}
+            \frac{\partial{E}}{\partial{y_1}}{w_{11}} + \frac{\partial{E}}{\partial{y_1}}{w_{21}} + \cdots + \frac{\partial{E}}{\partial{y_1}}{w_{m1}} \\
+            \frac{\partial{E}}{\partial{y_2}}{w_{12}} + \frac{\partial{E}}{\partial{y_2}}{w_{22}} + \cdots + \frac{\partial{E}}{\partial{y_2}}{w_{m2}} \\
             \vdots \\
-            \frac{\partial{E}}{\partial{\bar{y_m}}}{w_{1n}} + \frac{\partial{E}}{\partial{\bar{y_m}}}{w_{2n}} + \cdots + \frac{\partial{E}}{\partial{\bar{y_m}}}{w_{mn}}
-            \end{bmatrix}
-            = \begin{bmatrix}
+            \frac{\partial{E}}{\partial{y_m}}{w_{1n}} + \frac{\partial{E}}{\partial{y_m}}{w_{2n}} + \cdots + \frac{\partial{E}}{\partial{y_m}}{w_{mn}}
+            \end{bmatrix} =
+            \begin{bmatrix}
             w_{11} & w_{21} & \cdots & w_{m1} \\
             w_{12} & w_{22} & \cdots & w_{m2} \\
             \vdots & \vdots & \ddots & \vdots \\
             w_{1n} & w_{2n} & \cdots & w_{mn}
             \end{bmatrix}
             \begin{bmatrix}
-            \frac{\partial{E}}{\partial{\bar{y_1}}} \\
-            \frac{\partial{E}}{\partial{\bar{y_2}}} \\
+            \frac{\partial{E}}{\partial{y_1}} \\
+            \frac{\partial{E}}{\partial{y_2}} \\
             \vdots \\
-            \frac{\partial{E}}{\partial{\bar{y_m}}}
+            \frac{\partial{E}}{\partial{y_m}}
             \end{bmatrix}
             $$
-            $$ \frac{\partial{E}}{\partial{\bar{x}}} = W^t\frac{\partial{E}}{\partial{\bar{y}}} $$
+
+            $$\frac{\partial{E}}{\partial{\bar{x}}} = W^t\frac{\partial{E}}{\partial{\bar{y}}}$$
+
 2. **Activation Layer**
     
     - **Forward Propagation**: 
-    $$ y_i = a(x_i) $$   
-    $$ \bar{y} = \bar{a}(\bar{x}) $$
+        $$y_i = a(x_i)$$   
+        $$\bar{y} = \bar{a}(\bar{x})$$
     - **Backward Propagation**:   
         - **Imputed Error**:
             For each neuron $x_i$, we have to calculate the partial derivative of the error with respect to that neuron. Using the chain rule, we have:
-            $$ \frac{\partial{E}}{\partial{\bar{x_i}}} = \frac{\partial{E}}{\partial{\bar{y_i}}}\frac{\partial{\bar{y_i}}}{\partial{\bar{x_i}}} = \frac{\partial{E}}{\partial{\bar{y_i}}}a'(\bar{x_i}) $$
+            $$
+            \frac{\partial{E}}{\partial{\bar{x_i}}} =
+            \frac{\partial{E}}{\partial{\bar{y_i}}}\frac{\partial{\bar{y_i}}}{\partial{\bar{x_i}}} =
+            \frac{\partial{E}}{\partial{\bar{y_i}}}a'(\bar{x_i})
+            $$
             Extrapolating to matrix notation:
-        $$ \frac{\partial{E}}{\partial{\bar{x}}} = \frac{\partial{E}}{\partial{\bar{y}}}\odot{\bar{a}'} $$
+            $$
+            \frac{\partial{E}}{\partial{\bar{x}}} =
+            \frac{\partial{E}}{\partial{\bar{y}}}\odot{\bar{a}'}
+            $$
 
 ## Getting Started
 Use the following instructions to get a copy of the project up and running on your local machine.
