@@ -41,7 +41,7 @@ We are going to use a modular approach to create the NeuralNetwork class. Abstra
 2. **Backward Propagation**: Each layer $L_{i}$ will recieve the imputed error of the following layer, $L_{i+1}$, that is, the error with respect to the input of $L_{i+1}$, which is the same as the error with respect to the output of the $L_{i}$. The exception is the last layer, which will recieve the imputed error from our loss function.<br>
 In this project, we will be using the Log Loss function, which is defined as follows:<br>  
 
-$$L = -\sum_{c=1}^{M} y_{o,c} \log(p_{o,c})$$
+$$E = -\sum_{c=1}^{M} y_{o,c} \log(p_{o,c})$$
 , where $M$ is the number of classes, $y_{o,c}$ is a binary indicator (0 or 1) if class label $c$ is the correct classification for observation $o$, and $p_{o,c}$ is the probability that observation $o$ is classified as class $c$.<br>
 
 ### Basic Layers
