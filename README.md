@@ -39,8 +39,10 @@ We are going to use a modular approach to create the NeuralNetwork class. Abstra
 1. **Forward Propagation**: Each layer will recieve an input and will calculate the output of the layer, feeding it to the next layer. The exception is the first layer, which will recieve the input from the user.
 
 2. **Backward Propagation**: Each layer $L_{i}$ will recieve the imputed error of the following layer, $L_{i+1}$, that is, the error with respect to the input of $L_{i+1}$, which is the same as the error with respect to the output of the $L_{i}$. The exception is the last layer, which will recieve the imputed error from our loss function.<br>
-In this project, we will be using the Log Loss function, which is defined as follows:<br>
-$L = -\sum_{c=1}^{M} y_{o,c} \log(p_{o,c})$, where $M$ is the number of classes, $y_{o,c}$ is a binary indicator (0 or 1) if class label $c$ is the correct classification for observation $o$, and $p_{o,c}$ is the probability that observation $o$ is classified as class $c$.<br>
+In this project, we will be using the Log Loss function, which is defined as follows:<br>  
+
+$$L = -\sum_{c=1}^{M} y_{o,c} \log(p_{o,c})$$  
+, where $M$ is the number of classes, $y_{o,c}$ is a binary indicator (0 or 1) if class label $c$ is the correct classification for observation $o$, and $p_{o,c}$ is the probability that observation $o$ is classified as class $c$.<br>
 
 ### Basic Layers
 The Layer class will consist of 3 main methods:
@@ -97,34 +99,34 @@ We will take advantage of the modular approach of the neural network to define t
             Extrapolating to matrix notation:  
             
             
-$$
-\frac{\partial{E}}{\partial{\bar{x}}} = \begin{bmatrix}\frac{\partial{E}}{\partial{x_1}} \\
-\frac{\partial{E}}{\partial{x_2}} \\ 
-\vdots \\ 
-\frac{\partial{E}}{\partial{x_n}}
-\end{bmatrix} =
-\begin{bmatrix}
-\frac{\partial{E}}{\partial{y_1}}{w_{11}}+\frac{\partial{E}}{\partial{y_1}}{w_{21}}+\cdots+\frac{\partial{E}}{\partial{y_1}}{w_{m1}} \\ 
-\frac{\partial{E}}{\partial{y_2}}{w_{12}}+\frac{\partial{E}}{\partial{y_2}}{w_{22}}+\cdots+\frac{\partial{E}}{\partial{y_2}}{w_{m2}} \\ 
-\vdots \\ 
-\frac{\partial{E}}{\partial{y_m}}{w_{1n}}+\frac{\partial{E}}{\partial{y_m}}{w_{2n}}+\cdots+\frac{\partial{E}}{\partial{y_m}}{w_{mn}}
-\end{bmatrix} = 
-$$  
+            $$
+            \frac{\partial{E}}{\partial{\bar{x}}} = \begin{bmatrix}\frac{\partial{E}}{\partial{x_1}} \\
+            \frac{\partial{E}}{\partial{x_2}} \\ 
+            \vdots \\ 
+            \frac{\partial{E}}{\partial{x_n}}
+            \end{bmatrix} =
+            \begin{bmatrix}
+            \frac{\partial{E}}{\partial{y_1}}{w_{11}}+\frac{\partial{E}}{\partial{y_1}}{w_{21}}+\cdots+\frac{\partial{E}}{\partial{y_1}}{w_{m1}} \\ 
+            \frac{\partial{E}}{\partial{y_2}}{w_{12}}+\frac{\partial{E}}{\partial{y_2}}{w_{22}}+\cdots+\frac{\partial{E}}{\partial{y_2}}{w_{m2}} \\ 
+            \vdots \\ 
+            \frac{\partial{E}}{\partial{y_m}}{w_{1n}}+\frac{\partial{E}}{\partial{y_m}}{w_{2n}}+\cdots+\frac{\partial{E}}{\partial{y_m}}{w_{mn}}
+            \end{bmatrix} = 
+            $$  
 
-$$
-\begin{bmatrix}
-w_{11}&w_{21}&\cdots&w_{m1} \\ 
-w_{12}&w_{22}&\cdots&w_{m2} \\
-\vdots&\vdots&\ddots&\vdots \\
-w_{1n}&w_{2n}&\cdots&w_{mn}
-\end{bmatrix}
-\begin{bmatrix}
-\frac{\partial{E}}{\partial{y_1}} \\
-\frac{\partial{E}}{\partial{y_2}} \\
-\vdots \\
-\frac{\partial{E}}{\partial{y_m}}
-\end{bmatrix} = W^t\frac{\partial{E}}{\partial{\bar{y}}}
-$$
+            $$
+            \begin{bmatrix}
+            w_{11}&w_{21}&\cdots&w_{m1} \\ 
+            w_{12}&w_{22}&\cdots&w_{m2} \\
+            \vdots&\vdots&\ddots&\vdots \\
+            w_{1n}&w_{2n}&\cdots&w_{mn}
+            \end{bmatrix}
+            \begin{bmatrix}
+            \frac{\partial{E}}{\partial{y_1}} \\
+            \frac{\partial{E}}{\partial{y_2}} \\
+            \vdots \\
+            \frac{\partial{E}}{\partial{y_m}}
+            \end{bmatrix} = W^t\frac{\partial{E}}{\partial{\bar{y}}}
+            $$
 
 2. **Activation Layer**
     
@@ -134,7 +136,7 @@ $$
     - **Backward Propagation**:   
         - **Imputed Error**:
             For each neuron $x_i$, we have to calculate the partial derivative of the error with respect to that neuron. Using the chain rule, we have:
-$$\frac{\partial{E}}{\partial{\bar{x_i}}} = \frac{\partial{E}}{\partial{\bar{y_i}}}\frac{\partial{\bar{y_i}}}{\partial{\bar{x_i}}} = \frac{\partial{E}}{\partial{\bar{y_i}}}a'(\bar{x_i})$$
+            $$\frac{\partial{E}}{\partial{\bar{x_i}}} = \frac{\partial{E}}{\partial{\bar{y_i}}}\frac{\partial{\bar{y_i}}}{\partial{\bar{x_i}}} = \frac{\partial{E}}{\partial{\bar{y_i}}}a'(\bar{x_i})$$
             Extrapolating to matrix notation:
             $$\frac{\partial{E}}{\partial{\bar{x}}} = \frac{\partial{E}}{\partial{\bar{y}}}\odot{\bar{a}'}$$
 
