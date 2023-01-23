@@ -25,18 +25,7 @@
 - [Contact](#contact)
 
 ## About This Project
-$$
-A = \begin{bmatrix}
-1 & 6 \\
-5 & 2
-\end{bmatrix}, \mathbf{u} = \begin{bmatrix}
-6 \\
--5
-\end{bmatrix}, \mathbf{v} = \begin{bmatrix}
-3 \\
--2
-\end{bmatrix}
-$$
+
 ### Detailed Description
 We aim to create a complete project from scratch, including the creation of the dataset, the implementation and mathematical derivation of the neural network and the creation of a graphical interface to test the results.
 
@@ -51,7 +40,7 @@ We are going to use a modular approach to create the NeuralNetwork class. Abstra
 
 2. **Backward Propagation**: Each layer $L_{i}$ will recieve the imputed error of the following layer, $L_{i+1}$, that is, the error with respect to the input of $L_{i+1}$, which is the same as the error with respect to the output of the $L_{i}$. The exception is the last layer, which will recieve the imputed error from our loss function.<br>
 In this project, we will be using the Log Loss function, which is defined as follows:<br>
-$L = -\sum_{c=1}^{My_{o,c}} \log(p_{o,c})$, where $M$ is the number of classes, $y_{o,c}$ is a binary indicator (0 or 1) if class label $c$ is the correct classification for observation $o$, and $p_{o,c}$ is the probability that observation $o$ is classified as class $c$.<br>
+$L = -\sum_{c=1}^{M} y_{o,c} \log(p_{o,c})$, where $M$ is the number of classes, $y_{o,c}$ is a binary indicator (0 or 1) if class label $c$ is the correct classification for observation $o$, and $p_{o,c}$ is the probability that observation $o$ is classified as class $c$.<br>
 
 ### Basic Layers
 The Layer class will consist of 3 main methods:
@@ -106,18 +95,18 @@ We will take advantage of the modular approach of the neural network to define t
             This time, since $x_i$ is distributed in all the neurons of the next layer, we have to sum all the partial derivatives of the next layer with respect to $x_i$:
             $$\frac{\partial{E}}{\partial{x_i}} = \sum_{j}\frac{\partial{E}}{\partial{y_j}}\frac{\partial{y_j}}{\partial{x_i}} = \sum_{j}\frac{\partial{E}}{\partial{y_j}}w_{ji}$$
             Extrapolating to matrix notation:
-            $$
-            A = \begin{bmatrix}
-            1 & 6 \\
-            5 & 2
-            \end{bmatrix}, \mathbf{u} = \begin{bmatrix}
-            6 \\
-            -5
-            \end{bmatrix}, \mathbf{v} = \begin{bmatrix}
-            3 \\
-            -2
-            \end{bmatrix}
-            $$
+$$
+A = \begin{bmatrix}
+1 & 6 \\
+5 & 2
+\end{bmatrix}, \mathbf{u} = \begin{bmatrix}
+6 \\
+-5
+\end{bmatrix}, \mathbf{v} = \begin{bmatrix}
+3 \\
+-2
+\end{bmatrix}
+$$
 
 ```math
 \frac{\partial{E}}{\partial{\bar{x}}} = \begin{bmatrix}\frac{\partial{E}}{\partial{x_1}} \\
