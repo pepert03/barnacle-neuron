@@ -94,7 +94,9 @@ We will take advantage of the modular approach of the neural network to define t
         - **Imputed Error**:
             This time, since $x_i$ is distributed in all the neurons of the next layer, we have to sum all the partial derivatives of the next layer with respect to $x_i$:
             $$\frac{\partial{E}}{\partial{x_i}} = \sum_{j}\frac{\partial{E}}{\partial{y_j}}\frac{\partial{y_j}}{\partial{x_i}} = \sum_{j}\frac{\partial{E}}{\partial{y_j}}w_{ji}$$
-            Extrapolating to matrix notation:
+            Extrapolating to matrix notation:  
+            
+            
 $$
 A = \begin{bmatrix}
 1 & 6 \\
