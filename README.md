@@ -101,12 +101,6 @@ $$
 A = \begin{bmatrix}
 1 & 6 \\
 5 & 2
-\end{bmatrix}, \mathbf{u} = \begin{bmatrix}
-6 \\
--5
-\end{bmatrix}, \mathbf{v} = \begin{bmatrix}
-3 \\
--2
 \end{bmatrix}
 $$
 
