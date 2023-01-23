@@ -95,8 +95,18 @@ We will take advantage of the modular approach of the neural network to define t
             This time, since $x_i$ is distributed in all the neurons of the next layer, we have to sum all the partial derivatives of the next layer with respect to $x_i$:
             $$\frac{\partial{E}}{\partial{x_i}} = \sum_{j}\frac{\partial{E}}{\partial{y_j}}\frac{\partial{y_j}}{\partial{x_i}} = \sum_{j}\frac{\partial{E}}{\partial{y_j}}w_{ji}$$
             Extrapolating to matrix notation:
-            $\big(\begin{smallmatrix} a & b\\ c & d \end{smallmatrix}\big)$
-            $$\frac{\partial{E}}{\partial{\bar{x}}} = \begin{bmatrix}\frac{\partial{E}}{\partial{x_1}}\end{bmatrix}$$
+            $$
+            A = \begin{bmatrix}
+            1 & 6 \\
+            5 & 2
+            \end{bmatrix}, \mathbf{u} = \begin{bmatrix}
+            6 \\
+            -5
+            \end{bmatrix}, \mathbf{v} = \begin{bmatrix}
+            3 \\
+            -2
+            \end{bmatrix}
+            $$
 
 ```math
 \frac{\partial{E}}{\partial{\bar{x}}} = \begin{bmatrix}\frac{\partial{E}}{\partial{x_1}} \\
