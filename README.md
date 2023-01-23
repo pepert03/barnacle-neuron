@@ -25,7 +25,18 @@
 - [Contact](#contact)
 
 ## About This Project
-
+$$
+A = \begin{bmatrix}
+1 & 6 \\
+5 & 2
+\end{bmatrix}, \mathbf{u} = \begin{bmatrix}
+6 \\
+-5
+\end{bmatrix}, \mathbf{v} = \begin{bmatrix}
+3 \\
+-2
+\end{bmatrix}
+$$
 ### Detailed Description
 We aim to create a complete project from scratch, including the creation of the dataset, the implementation and mathematical derivation of the neural network and the creation of a graphical interface to test the results.
 
