@@ -108,6 +108,9 @@ We will take advantage of the modular approach of the neural network to define t
 \vdots \\
 \frac{\partial{E}}{\partial{y_m}}{w_{1n}}+\frac{\partial{E}}{\partial{y_m}}{w_{2n}}+\cdots+\frac{\partial{E}}{\partial{y_m}}{w_{mn}}
 \end{bmatrix} = 
+```
+
+```math
 \begin{bmatrix}w_{11}&w_{21}&\cdots&w_{m1}\\w_{12}&w_{22}&\cdots&w_{m2}\\\vdots&\vdots&\ddots&\vdots\\w_{1n}&w_{2n}&\cdots&w_{mn}\end{bmatrix}\begin{bmatrix}\frac{\partial{E}}{\partial{y_1}}\\\frac{\partial{E}}{\partial{y_2}}\\\vdots\\\frac{\partial{E}}{\partial{y_m}}\end{bmatrix}= W^t\frac{\partial{E}}{\partial{\bar{y}}}
 ```
 
