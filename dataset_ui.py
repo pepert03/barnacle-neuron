@@ -22,6 +22,8 @@ def draw_gameboard(board):
 
 
 def save(export, board):
+    '''Save image:
+    Save the pygame window as an image in the data folder'''
     WIN = pg.display.set_mode((L,L))
     for y in range(L):
         for x in range(L):
@@ -37,9 +39,34 @@ def save(export, board):
         if not os.path.exists("data/{}/{}.png".format(export, i)):
             pg.image.save(WIN, "data/{}/{}.png".format(export, i))
             break
-    
+
+
+def create_df():
+    '''Dataframe creation:
+    Create a dataframe with the data and the label of each image'''
+    df = pd.DataFrame(columns=['data', 'label'])
+    for i in range(10):
+        folder = str(i)
+        for file in os.listdir('data/' + folder):
+            img = plt.imread('data/' + folder + '/' + file)
+            gray = (np.mean(img, axis=2).reshape(1,-1)*255).astype(np.uint8).tolist()[0]
+            df.loc[len(df)] = [gray, folder]
+    return df
+
+
+def save_image(path,n):
+    '''Save image:
+    Save an image in a csv file'''
+    img=plt.imread(path)
+    gray=(np.mean(img,axis=2).reshape(1,-1)*255).astype(np.uint8).tolist()[0]
+    df=pd.DataFrame(columns=['data','label'])
+    df.loc[0]=[gray,n]
+    df.to_csv(f"{n}.csv",index=False)
+
 
 def main():
+    '''Main function:
+    Create a window to draw numbers and save them in the data folder'''
     board = [[0 for x in range(L)] for y in range(L)]
     clock = pg.time.Clock()
     export = -1
@@ -107,22 +134,6 @@ def main():
 
     pg.quit()
 
-def create_df():
-    df = pd.DataFrame(columns=['data', 'label'])
-    for i in range(10):
-        folder = str(i)
-        for file in os.listdir('data/' + folder):
-            img = plt.imread('data/' + folder + '/' + file)
-            gray = (np.mean(img, axis=2).reshape(1,-1)*255).astype(np.uint8).tolist()[0]
-            df.loc[len(df)] = [gray, folder]
-    return df
-
-def save_image(path,n):
-    img=plt.imread(path)
-    gray=(np.mean(img,axis=2).reshape(1,-1)*255).astype(np.uint8).tolist()[0]
-    df=pd.DataFrame(columns=['data','label'])
-    df.loc[0]=[gray,n]
-    df.to_csv(f"{n}.csv",index=False)
 
 if __name__ == "__main__":
     main()
