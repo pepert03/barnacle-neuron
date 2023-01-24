@@ -2,7 +2,7 @@
 [![made-with-pygame](https://img.shields.io/badge/Made%20with-Pygame-informational?style=flat-square)](https://www.pygame.org/news)
 
 
-<div style="text-align:left"><img src="images/logo.jpg" width="100%"></div>
+<div style="text-align:left"><img src="data/logo.jpg" width="100%"></div>
 
 
 # The Barnacle Neuron
