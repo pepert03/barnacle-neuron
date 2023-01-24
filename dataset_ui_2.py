@@ -1,33 +1,34 @@
 import os
 import pygame as pg
-import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
 # Initialize pygame
 pg.init()
-
-# Multiple of 28
-RESOLUTION = 28 * 10
-screen = pg.display.set_mode((RESOLUTION, RESOLUTION))
 pg.display.set_caption("Dataset UI")
 
+# Constants
+RESOLUTION = 28 * 10
+BRUSH_SIZE = 35
 
-def draw_grid(board):
-    """Draw image pixel by pixel in the pygame screendow, augmenting the size of each pixel by INCREASE
-    to make it more visible"""
+
+def draw_board(board: list[list[int]], screen: pg.Surface):
+    """
+    Draw image pixel by pixel in the pygame screen.
+    """
     for y in range(RESOLUTION):
         for x in range(RESOLUTION):
             g = int(255 * board[y][x])
             pg.draw.rect(screen, (g, g, g), (x, y, 1, 1))
 
 
-def save(label, board):
+def save(label: int | str, board: list[list[int]]):
     """
     Save the image drawn in the pygame screendow in a png file in the data folder.
     Reduces the resolution of the image to 28x28
     """
 
+    # Create folders if they don't exist
     if not os.path.exists("data"):
         os.mkdir("data")
     if not os.path.exists(f"data/{label}"):
@@ -56,12 +57,14 @@ def save(label, board):
     plt.imsave(f"data/{label}/{next_image}.png", image, cmap="gray")
 
 
-def get_neighbours(x, y, brush_size):
-    """Get neighbours:
-    Get the 8 neighbours of a pixel
-    Returns: generator of the neighbours"""
+def get_neighbours(x: int, y: int, brush_size: int):
+    """
+    Returns a generator of the surrounding pixels of a pixel, that are inside the brush size,
+    wich is a circle.
+    """
     for i in range(-brush_size // 2, brush_size // 2 + 1):
         for j in range(-brush_size // 2, brush_size // 2 + 1):
+            # Euclidean distance
             d = ((i) ** 2 + (j) ** 2) ** 0.5
             if 0 < d <= brush_size // 2:
                 if 0 <= x + i < RESOLUTION and 0 <= y + j < RESOLUTION:
@@ -70,8 +73,12 @@ def get_neighbours(x, y, brush_size):
 
 def main():
     """
-    Create a screendow to draw numbers and save them in the data folder
+    Create a screen to draw numbers and save them in the data folder,
+    each number is saved in a folder with its label.
     """
+
+    # Initialize screen
+    screen = pg.display.set_mode((RESOLUTION, RESOLUTION))
 
     # Initialize black board
     board = [[0 for _ in range(RESOLUTION)] for _ in range(RESOLUTION)]
@@ -101,21 +108,13 @@ def main():
                     run = False
 
         # Paint brush
-        INTENSITY = 1
-        SIZE = 35
         mouse = pg.mouse.get_pressed()
         if any(mouse):
             j, i = pg.mouse.get_pos()
-            if mouse[0]:
-                board[i][j] = 1
-                for ci, cj in get_neighbours(j, i, SIZE):
-                    # d = ((ci - i) ** 2 + (cj - j) ** 2) ** 0.5 / (SIZE // 2)
-                    # board[ci][cj] = min(1, board[ci][cj] + INTENSITY / d)
-                    board[ci][cj] = 1
-            if mouse[2]:
-                board[i][j] = 0
-                for ci, cj in get_neighbours(j, i, SIZE):
-                    board[ci][cj] = 0
+            color = 1 if mouse[0] else 0
+            board[i][j] = color
+            for ci, cj in get_neighbours(j, i):
+                board[ci][cj] = color
 
         # Save image
         if label != -1:
@@ -124,7 +123,7 @@ def main():
             label = -1
 
         # Draw
-        draw_grid(board)
+        draw_board(board, screen)
         pg.display.update()
         clock.tick(FPS)
 
