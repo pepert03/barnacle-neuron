@@ -8,114 +8,129 @@ import matplotlib.pyplot as plt
 pg.init()
 RESOLUTION = 28
 INCREASE = 10
-screen = pg.display.set_mode((RESOLUTION*INCREASE,RESOLUTION*INCREASE))
+screen = pg.display.set_mode((RESOLUTION * INCREASE, RESOLUTION * INCREASE))
 pg.display.set_caption("Dataset UI")
 
+
 def draw_grid(board):
+    """Draw image pixel by pixel in the pygame screendow, augmenting the size of each pixel by INCREASE
+    to make it more visible"""
     for y in range(RESOLUTION):
         for x in range(RESOLUTION):
-            n = board[y][x]
-            pg.draw.rect(screen, (int(255*n),int(255*n),int(255*n)), (x*INCREASE, y*INCREASE, INCREASE, INCREASE))
+            g = int(255 * board[y][x])
+            pg.draw.rect(
+                screen, (g, g, g), (x * INCREASE, y * INCREASE, INCREASE, INCREASE)
+            )
 
 
-def save(export, board):
-    '''Save image:
-    Save the pygame screendow as an image in the data folder'''
-    screen = pg.display.set_mode((RESOLUTION,RESOLUTION))
-    for y in range(RESOLUTION):
-        for x in range(RESOLUTION):
-            n = board[y][x]
-            pg.draw.rect(screen, (int(255*n),int(255*n),int(255*n)), (x, y, 1, 1))    
-
+def save(label):
+    """
+    Save the image drawn in the pygame screendow in a png file in the data folder
+    """
 
     if not os.path.exists("data"):
         os.mkdir("data")
-    if not os.path.exists("data/{}".format(export)):
-        os.mkdir("data/{}".format(export))
-    for i in range(200):
-        if not os.path.exists("data/{}/{}.png".format(export, i)):
-            pg.image.save(screen, "data/{}/{}.png".format(export, i))
-            break
+    if not os.path.exists(f"data/{label}"):
+        os.mkdir(f"data/{label}")
+
+    i = 0
+    while not os.path.exists(f"data/{label}/{i}.png"):
+        i += 1
+    pg.image.save(screen, f"data/{label}/{i}.png")
 
 
 def create_df():
-    '''Dataframe creation:
-    Create a dataframe with the data and the label of each image'''
-    df = pd.DataFrame(columns=['data', 'label'])
+    """
+    Create a dataframe with the data and the label of each image
+    """
+
+    df = pd.DataFrame(columns=["data", "label"])
     for i in range(10):
         folder = str(i)
-        for file in os.listdir('data/' + folder):
-            img = plt.imread('data/' + folder + '/' + file)
-            gray = (np.mean(img, axis=2).reshape(1,-1)*255).astype(np.uint8).tolist()[0]
+        for file in os.listdir("data/" + folder):
+            img = plt.imread("data/" + folder + "/" + file)
+            gray = (
+                (np.mean(img, axis=2).reshape(1, -1) * 255).astype(np.uint8).tolist()[0]
+            )
             df.loc[len(df)] = [gray, folder]
+
     return df
 
 
-def save_image(path,n):
-    '''Save image:
-    Save an image in a csv file'''
-    img=plt.imread(path)
-    gray=(np.mean(img,axis=2).reshape(1,-1)*255).astype(np.uint8).tolist()[0]
-    df=pd.DataFrame(columns=['data','label'])
-    df.loc[0]=[gray,n]
-    df.to_csv(f"{n}.csv",index=False)
+def get_neighbours(x, y):
+    """Get neighbours:
+    Get the 8 neighbours of a pixel
+    Returns: generator of the neighbours"""
+    for i in range(-1, 2):
+        for j in range(-1, 2):
+            if i == 0 and j == 0:
+                continue
+            if 0 <= x + i < RESOLUTION and 0 <= y + j < RESOLUTION:
+                yield (y + j, x + i)
 
 
 def main():
-    '''Main function:
-    Create a screendow to draw numbers and save them in the data folder'''
-    board = [[0 for x in range(RESOLUTION)] for y in range(RESOLUTION)]
+    """
+    Create a screendow to draw numbers and save them in the data folder
+    """
+
+    # Initialize black board
+    board = [[0 for _ in range(RESOLUTION)] for _ in range(RESOLUTION)]
+
+    # Image label
+    label = -1
+
+    # Initialize clock with 60 FPS
     clock = pg.time.Clock()
-    export = -1
+    FPS = 120
+
     run = True
     while run:
-        clock.tick(120)
+
+        # Events
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 run = False
             if event.type == pg.KEYUP:
-                for i in range(10):
-                    if event.key == pg.K_0 + i:
-                        export = i
+                if pg.K_0 <= event.key <= pg.K_9:
+                    label = event.key - pg.K_0
+                if event.key == pg.K_RETURN:
+                    board = [[0 for _ in range(RESOLUTION)] for _ in range(RESOLUTION)]
+                if event.key == pg.K_BACKSPACE:
+                    board = [[0 for _ in range(RESOLUTION)] for _ in range(RESOLUTION)]
+                if event.key == pg.K_ESCAPE:
+                    run = False
+
+        # Paint brush
+        intensity = 0.25
         mouse = pg.mouse.get_pressed()
-        if mouse[0]:
+        if any(mouse):
             x, y = pg.mouse.get_pos()
-            x , y = x//INCREASE, y//INCREASE
-            board[y][x] = 1
-            if x < RESOLUTION-1:
-                board[y][x+1] = (1 + board[y][x+1])/2
-            if x > 0:
-                board[y][x-1] = (1 + board[y][x-1])/2
-            if y < RESOLUTION-1:
-                board[y+1][x] = (1 + board[y+1][x])/2
-            if y > 0:
-                board[y-1][x] = (1 + board[y-1][x])/2
-        if mouse[2]:
-            x, y = pg.mouse.get_pos()
-            x , y = x//INCREASE, y//INCREASE
-            board[y][x] = 0
-            if x < RESOLUTION-1:
-                board[y][x+1] = 0
-            if x > 0:
-                board[y][x-1] = 0
-            if y < RESOLUTION-1:
-                board[y+1][x] = 0
-            if y > 0:
-                board[y-1][x] = 0
-        
-        if export != -1:
-            save(export, board)
-            screen = pg.display.set_mode((RESOLUTION*INCREASE,RESOLUTION*INCREASE))
-            board = [[0 for x in range(RESOLUTION)] for y in range(RESOLUTION)]
-            export = -1
-        
+            j, i = x // INCREASE, y // INCREASE
+            if mouse[0]:
+                board[i][j] = 1
+                for ci, cj in get_neighbours(j, i):
+                    d = abs(ci - i) + abs(cj - j)
+                    board[ci][cj] = min(1, board[ci][cj] + intensity / (2 * d))
+            if mouse[2]:
+                board[i][j] = 0
+                for ci, cj in get_neighbours(j, i):
+                    board[ci][cj] = 0
+
+        # Save image
+        if label != -1:
+            save(label)
+            board = [[0 for _ in range(RESOLUTION)] for _ in range(RESOLUTION)]
+            label = -1
+
+        # Draw
         draw_grid(board)
         pg.display.update()
+        clock.tick(FPS)
 
     pg.quit()
+    print("Bye!")
 
 
 if __name__ == "__main__":
     main()
-    df = create_df()
-    df.to_csv("data/data.csv", index=False)
