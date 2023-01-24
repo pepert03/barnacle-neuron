@@ -2,7 +2,7 @@
 [![made-with-pygame](https://img.shields.io/badge/Made%20with-Pygame-informational?style=flat-square)](https://www.pygame.org/news)
 
 
-<div style="text-align:left"><img src="images/logo.jpg" width="100%"></div>
+<div style="text-align:left"><img src="data/logo.jpg" width="100%"></div>
 
 
 # The Barnacle Neuron
@@ -30,7 +30,7 @@
 We aim to create a complete project from scratch, including the creation of the dataset, the implementation and mathematical derivation of the neural network and the creation of a graphical interface to test the results.
 
 ### Dataset Creation
-Tocrate the dataset, we've made a pygame interface that allows us to draw letters and numbers and save them as images. 
+To create the dataset, we've made a pygame interface that allows us to draw letters and numbers and save them as images. 
 In order to achive translation, rotation and scaling invariance, we've used data augmentation techniques to expand the dataset.
 
 ### Neural Network
