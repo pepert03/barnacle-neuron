@@ -35,7 +35,7 @@ def save(label, board):
 
     # Find next image number
     next_image = 0
-    while os.path.exists(f"data/{label}/{i}.png"):
+    while os.path.exists(f"data/{label}/{next_image}.png"):
         next_image += 1
 
     # Reduce resolution to 28x28 using mean
