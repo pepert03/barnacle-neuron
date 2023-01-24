@@ -168,6 +168,7 @@ git clone https://github.com/pepert03/barnacle-neuron.git
     7. (Optional) Run the data_augmentation.py file to
     create more images for the dataset.
     
+    <br>
 - **Number / Letters Classification**
     * **GUI**
         1. Run the prediction_ui.py file
@@ -187,7 +188,7 @@ git clone https://github.com/pepert03/barnacle-neuron.git
 
 ## Contact
 
-- [José Ridruejo][email-pepe]
+- [José Ridruejo Tuñón][email-pepe]
 - [Sergio Herreros Pérez][email-gomi]
 
 
