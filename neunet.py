@@ -16,5 +16,3 @@ class Layer:
 
     def backward(self, input, error):
         pass
-
-
