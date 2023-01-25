@@ -39,10 +39,11 @@ We are going to use a modular approach to create the NeuralNetwork class. Abstra
 1. **Forward Propagation**: Each layer will recieve an input and will calculate the output of the layer, feeding it to the next layer. The exception is the first layer, which will recieve the input from the user.
 
 2. **Backward Propagation**: Each layer $L_{i}$ will recieve the imputed error of the following layer, $L_{i+1}$, that is, the error with respect to the input of $L_{i+1}$, which is the same as the error with respect to the output of the $L_{i}$. The exception is the last layer, which will recieve the imputed error from our loss function.<br>
-In this project, we will be using the Log Loss function, which is defined as follows:<br>  
+In this project, we will be using the Categorical Cross-Entropy Loss function, which is defined as follows:<br>  
 
-$$E = -\sum_{c=1}^{M} y_{o,c} \log(p_{o,c})$$
-, where $M$ is the number of classes, $y_{o,c}$ is a binary indicator (0 or 1) if class label $c$ is the correct classification for observation $o$, and $p_{o,c}$ is the probability that observation $o$ is classified as class $c$.<br>
+    $$E(\textbf{y},\hat{y}) = -\sum_{i} \textbf{y}_{i} \log(\hat{y_{i}})$$
+
+    , where $\textbf{y}$ is the real output distribution and $\hat{\textbf{y}}$ is the predicted output distribution. The Categorical Cross-entropy takes as input two discrete probability distributions, $\textbf{y}$ and $\hat{y}$, and outputs a single real-valued number representing the similarity of both probability distributions.
 
 ### Basic Layers
 The Layer class will consist of 3 main methods:
@@ -58,12 +59,15 @@ Now we proceed to define the formulas needed in forward and backward propagation
 - $\bar{X}$: Dataset input (matrix)
 - $\bar{Y}$: Dataset output (matrix)
 
+- $\textbf{x}$: Input of the network (vector)
+- $\textbf{y}$: Output of the network (vector)
+
 - $\bar{x}$: Input of the layer (vector)
 - $\bar{y}$: Output of the layer (vector)
 
 - $\bar{W}$: Weights of the layer (matrix)
 - $\bar{b}$: Bias of the layer (vector)
-- $\bar{a}$: Activation function of the layer (vector)
+- $\bar{a}(\bar{x})$: Activation function of the layer (vector)
 
 - $n$: length of $\bar{x}$
 - $m$: length of $\bar{y}$
@@ -129,16 +133,78 @@ w_{1n}&w_{2n}&\cdots&w_{mn}
 $$
 
 2. **Activation Layer**
-    
-    - **Forward Propagation**: 
-        $$y_i = a(x_i)$$
+    - **Activation Functions**: Here we'll use two activation functions:  
+
+        - **Tanh**: 
+            $$a_i(\bar{x}) = \frac{e^{x_i}-e^{-x_i}}{e^{x_i}+e^{-x_i}}$$
+            $$\frac{\partial{a_i(\bar{x})}}{\partial{x_j}} = \left\{ 1 - a_i^2(\bar{x}) \ \ \ if \ \  j==i \atop \ \ \ \ \ \ \ 0  \ \ \ \ \ \ \ \ \ \ \ \ otherwise  \right.$$
+        - **Softmax**: 
+            $$a_i(\bar{x}) = \frac{e^{x_i}}{\sum_{j}e^{x_j}}$$
+            $$\frac{\partial{a_i(\bar{x})}}{\partial{x_j}} = \left\{ a_i(\bar{x})(1-a_i(\bar{x})) \ \ \ if \ \  j==i \atop \ \ \ -a_i(\bar{x})a_j(\bar{x})  \ \ \ \ \ \ otherwise  \right. = a_i(\bar{x})(1\{i==j\}-a_j(\bar{x}))$$
+
+    - **Forward Propagation**:  
+        $$y_i = a_i(\bar{x})$$
         $$\bar{y} = \bar{a}(\bar{x})$$
+
     - **Backward Propagation**:   
         - **Imputed Error**:
             For each neuron $x_i$, we have to calculate the partial derivative of the error with respect to that neuron. Using the chain rule, we have:
-            $$\frac{\partial{E}}{\partial{\bar{x_i}}} = \frac{\partial{E}}{\partial{\bar{y_i}}}\frac{\partial{\bar{y_i}}}{\partial{\bar{x_i}}} = \frac{\partial{E}}{\partial{\bar{y_i}}}a'(\bar{x_i})$$
-            Extrapolating to matrix notation:
-            $$\frac{\partial{E}}{\partial{\bar{x}}} = \frac{\partial{E}}{\partial{\bar{y}}}\odot{\bar{a}'}$$
+            $$\frac{\partial{E}}{\partial{x_i}} = \sum_{j}\frac{\partial{E}}{\partial{y_j}}\frac{\partial{y_j}}{\partial{x_i}} = \sum_{j}\frac{\partial{E}}{\partial{y_j}}\frac{\partial{a_j(\bar{x})}}{\partial{x_i}}$$
+            Extrapolating to matrix notation:  
+                      
+$$
+\frac{\partial{E}}{\partial{\bar{x}}} = \begin{bmatrix}\frac{\partial{E}}{\partial{x_1}} \\
+\frac{\partial{E}}{\partial{x_2}} \\ 
+\vdots \\ 
+\frac{\partial{E}}{\partial{x_n}}
+\end{bmatrix} =
+\begin{bmatrix}
+\frac{\partial{E}}{\partial{y_1}}\frac{\partial{a_1(\bar{x})}}{\partial{x_1}}+\frac{\partial{E}}{\partial{y_2}}\frac{\partial{a_2(\bar{x})}}{\partial{x_1}}+\cdots+\frac{\partial{E}}{\partial{y_m}}\frac{\partial{a_m(\bar{x})}}{\partial{x_1}} \\
+\frac{\partial{E}}{\partial{y_1}}\frac{\partial{a_1(\bar{x})}}{\partial{x_2}}+\frac{\partial{E}}{\partial{y_2}}\frac{\partial{a_2(\bar{x})}}{\partial{x_2}}+\cdots+\frac{\partial{E}}{\partial{y_m}}\frac{\partial{a_m(\bar{x})}}{\partial{x_2}} \\
+\vdots \\
+\frac{\partial{E}}{\partial{y_1}}\frac{\partial{a_1(\bar{x})}}{\partial{x_n}}+\frac{\partial{E}}{\partial{y_2}}\frac{\partial{a_2(\bar{x})}}{\partial{x_n}}+\cdots+\frac{\partial{E}}{\partial{y_m}}\frac{\partial{a_m(\bar{x})}}{\partial{x_n}}
+\end{bmatrix} =
+$$  
+
+$$
+\begin{bmatrix}
+\frac{\partial{a_1(\bar{x})}}{\partial{x_1}} & \frac{\partial{a_1(\bar{x})}}{\partial{x_2}} & \cdots & \frac{\partial{a_1(\bar{x})}}{\partial{x_n}} \\
+\frac{\partial{a_2(\bar{x})}}{\partial{x_1}} & \frac{\partial{a_2(\bar{x})}}{\partial{x_2}} & \cdots & \frac{\partial{a_2(\bar{x})}}{\partial{x_n}} \\
+\vdots & \vdots & \ddots & \vdots \\
+\frac{\partial{a_m(\bar{x})}}{\partial{x_1}} & \frac{\partial{a_m(\bar{x})}}{\partial{x_2}} & \cdots & \frac{\partial{a_m(\bar{x})}}{\partial{x_n}}
+\end{bmatrix}
+\begin{bmatrix}
+\frac{\partial{E}}{\partial{y_1}} \\
+\frac{\partial{E}}{\partial{y_2}} \\
+\vdots \\
+\frac{\partial{E}}{\partial{y_m}}
+\end{bmatrix} =
+J_a(\bar{x})^T\frac{\partial{E}}{\partial{\bar{y}}}
+$$
+
+3. **Loss Layer**  
+    Using the [error](#Neural-Network) defined above, we can calculate the error of the network.
+    - **Backward Propagation**:   
+        - **Imputed Error**: 
+            $$\frac{\partial{E(\textbf{y},\bar{x})}}{\partial{x_i}} = - \sum_j \textbf{y}_j \frac{\partial{\log{x_j}}}{\partial{x_i}} = - \frac{\textbf{y}_i}{x_i}$$
+            , where $\textbf{y}$ is the real output of the network and $\bar{x}$ is the output of the last layer of the network, i.e. the predicted output.  
+    
+    We can check that this works, calculating what would be the $\frac{\partial{E}}{\partial{\bar{z}}}$, where $z$ is the output of the last activation layer, in our case, a softmax layer. For simplicity, lets call $s_i(z_i)$ the softmax function.
+    $$\frac{\partial{E}}{\partial{z_i}} = \sum_j \frac{\partial{E}}{\partial{s_j}}\frac{\partial{s_j}}{\partial{z_i}} = \sum_j (-\frac{\textbf{y}_j}{s_j})(s_j(1\{i==j\}-s_i))$$
+    $$ = \sum_j -\textbf{y}_j(1\{i==j\}-s_i) = \sum_j -\textbf{y}_j(1\{i==j\}-s_i) = -\textbf{y}_i + \sum_j \textbf{y}_j s_i$$
+    $$ = -\textbf{y}_i + \textbf{y}_i s_i = s_i - \textbf{y}_i$$  
+
+    Vectorizing this, we get:
+
+    $$\frac{\partial{E}}{\partial{\bar{z}}} = \begin{bmatrix}\frac{\partial{E}}{\partial{z_1}} \\
+    \frac{\partial{E}}{\partial{z_2}} \\
+    \vdots \\
+    \frac{\partial{E}}{\partial{z_n}}
+    \end{bmatrix} = \begin{bmatrix}s_1 - \textbf{y}_1 \\
+    s_2 - \textbf{y}_2 \\
+    \vdots \\
+    s_n - \textbf{y}_n
+    \end{bmatrix} = \bar{s} - \textbf{y}$$
 
 ## Getting Started
 Use the following instructions to get a copy of the project up and running on your local machine.

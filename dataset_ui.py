@@ -1,78 +1,84 @@
 import os
 import pygame as pg
-import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-
+# Initialize pygame
 pg.init()
-RESOLUTION = 28
-INCREASE = 10
-screen = pg.display.set_mode((RESOLUTION * INCREASE, RESOLUTION * INCREASE))
 pg.display.set_caption("Dataset UI")
 
+# Constants
+RESOLUTION = 28 * 10
+BRUSH_SIZE = 35
 
-def draw_grid(board):
-    """Draw image pixel by pixel in the pygame screendow, augmenting the size of each pixel by INCREASE
-    to make it more visible"""
+
+def draw_board(board: list[list[int]], screen: pg.Surface):
+    """
+    Draw image pixel by pixel in the pygame screen.
+    """
     for y in range(RESOLUTION):
         for x in range(RESOLUTION):
             g = int(255 * board[y][x])
-            pg.draw.rect(
-                screen, (g, g, g), (x * INCREASE, y * INCREASE, INCREASE, INCREASE)
-            )
+            pg.draw.rect(screen, (g, g, g), (x, y, 1, 1))
 
 
-def save(label):
+def save(label: int | str, board: list[list[int]]):
     """
-    Save the image drawn in the pygame screendow in a png file in the data folder
+    Save the image drawn in the pygame screendow in a png file in the data folder.
+    Reduces the resolution of the image to 28x28
     """
 
+    # Create folders if they don't exist
     if not os.path.exists("data"):
         os.mkdir("data")
     if not os.path.exists(f"data/{label}"):
         os.mkdir(f"data/{label}")
 
-    i = 0
-    while not os.path.exists(f"data/{label}/{i}.png"):
-        i += 1
-    pg.image.save(screen, f"data/{label}/{i}.png")
+    # Find next image number
+    next_image = 0
+    while os.path.exists(f"data/{label}/{next_image}.png"):
+        next_image += 1
+
+    # Reduce resolution to 28x28 using mean
+    img = [[0 for _ in range(28)] for _ in range(28)]
+    WIDTH = RESOLUTION // 28
+    HEIGHT = RESOLUTION // 28
+    for y in range(28):
+        for x in range(28):
+            for i in range(HEIGHT):
+                for j in range(WIDTH):
+                    img[y][x] += board[y * HEIGHT + i][x * WIDTH + j]
+            img[y][x] /= 28**2
+
+    # Convert to image
+    image = np.array(img).reshape(28, 28)
+
+    # Save image
+    plt.imsave(f"data/{label}/{next_image}.png", image, cmap="gray")
 
 
-def create_df():
+def get_neighbours(x: int, y: int):
     """
-    Create a dataframe with the data and the label of each image
+    Returns a generator of the surrounding pixels of a pixel, that are inside the brush size,
+    wich is a circle.
     """
-
-    df = pd.DataFrame(columns=["data", "label"])
-    for i in range(10):
-        folder = str(i)
-        for file in os.listdir("data/" + folder):
-            img = plt.imread("data/" + folder + "/" + file)
-            gray = (
-                (np.mean(img, axis=2).reshape(1, -1) * 255).astype(np.uint8).tolist()[0]
-            )
-            df.loc[len(df)] = [gray, folder]
-
-    return df
-
-
-def get_neighbours(x, y):
-    """Get neighbours:
-    Get the 8 neighbours of a pixel
-    Returns: generator of the neighbours"""
-    for i in range(-1, 2):
-        for j in range(-1, 2):
-            if i == 0 and j == 0:
-                continue
-            if 0 <= x + i < RESOLUTION and 0 <= y + j < RESOLUTION:
-                yield (y + j, x + i)
+    for i in range(-BRUSH_SIZE // 2, BRUSH_SIZE // 2 + 1):
+        for j in range(-BRUSH_SIZE // 2, BRUSH_SIZE // 2 + 1):
+            # Euclidean distance
+            d = ((i) ** 2 + (j) ** 2) ** 0.5
+            if 0 < d <= BRUSH_SIZE // 2:
+                if 0 <= x + i < RESOLUTION and 0 <= y + j < RESOLUTION:
+                    yield (y + j, x + i)
 
 
 def main():
     """
-    Create a screendow to draw numbers and save them in the data folder
+    Create a screen to draw numbers and save them in the data folder,
+    each number is saved in a folder with its label.
     """
+
+    # Initialize screen
+    screen = pg.display.set_mode((RESOLUTION, RESOLUTION))
 
     # Initialize black board
     board = [[0 for _ in range(RESOLUTION)] for _ in range(RESOLUTION)]
@@ -102,29 +108,22 @@ def main():
                     run = False
 
         # Paint brush
-        intensity = 0.25
         mouse = pg.mouse.get_pressed()
         if any(mouse):
-            x, y = pg.mouse.get_pos()
-            j, i = x // INCREASE, y // INCREASE
-            if mouse[0]:
-                board[i][j] = 1
-                for ci, cj in get_neighbours(j, i):
-                    d = abs(ci - i) + abs(cj - j)
-                    board[ci][cj] = min(1, board[ci][cj] + intensity / (2 * d))
-            if mouse[2]:
-                board[i][j] = 0
-                for ci, cj in get_neighbours(j, i):
-                    board[ci][cj] = 0
+            j, i = pg.mouse.get_pos()
+            color = 1 if mouse[0] else 0
+            board[i][j] = color
+            for ci, cj in get_neighbours(j, i):
+                board[ci][cj] = color
 
         # Save image
         if label != -1:
-            save(label)
+            save(label, board)
             board = [[0 for _ in range(RESOLUTION)] for _ in range(RESOLUTION)]
             label = -1
 
         # Draw
-        draw_grid(board)
+        draw_board(board, screen)
         pg.display.update()
         clock.tick(FPS)
 
