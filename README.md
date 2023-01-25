@@ -136,14 +136,14 @@ $$
     - **Activation Functions**: Here we'll use two activation functions:  
 
         - **Tanh**: 
-            $$a_i(\bar{x}) = \frac{e^{x_i}-e^{-x_i}}{e^{x_i}+e^{-x_i}}$$  
+            $$a_i(\bar{x}) = \frac{e^{x_i}-e^{-x_i}}{e^{x_i}+e^{-x_i}}$$   
 
-            $$\frac{\partial{a_i(\bar{x})}}{\partial{x_j}} = \left\{ 1 - a_i^2(\bar{x}) \ \ \ if \ \  j==i \atop \ \ \ \ \ \ \ 0  \ \ \ \ \ \ \ \ \ \ \ \ otherwise  \right.$$
+$$\frac{\partial{a_i(\bar{x})}}{\partial{x_j}} = \left\{ 1 - a_i^2(\bar{x}) \ \ \ if \ \  j==i \atop \ \ \ \ \ \ \ 0  \ \ \ \ \ \ \ \ \ \ \ \ otherwise  \right.$$
 
         - **Softmax**: 
             $$a_i(\bar{x}) = \frac{e^{x_i}}{\sum_{j}e^{x_j}}$$  
 
-            $$\frac{\partial{a_i(\bar{x})}}{\partial{x_j}} = \left\{ a_i(\bar{x})(1-a_i(\bar{x})) \ \ \ if \ \  j==i \atop \ \ \ -a_i(\bar{x})a_j(\bar{x})  \ \ \ \ \ \ otherwise  \right. = a_i(\bar{x})(1\{i==j\}-a_j(\bar{x}))$$
+            $$\frac{\partial{a_i(\bar{x})}}{\partial{x_j}} = \left\{ a_i(\bar{x})(1-a_i(\bar{x})) if j==i \atop -a_i(\bar{x})a_j(\bar{x}) otherwise \right. = a_i(\bar{x})(1\{i==j\}-a_j(\bar{x}))$$
 
 
     - **Forward Propagation**:  
