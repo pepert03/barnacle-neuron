@@ -41,9 +41,10 @@ We are going to use a modular approach to create the NeuralNetwork class. Abstra
 2. **Backward Propagation**: Each layer $L_{i}$ will recieve the imputed error of the following layer, $L_{i+1}$, that is, the error with respect to the input of $L_{i+1}$, which is the same as the error with respect to the output of the $L_{i}$. The exception is the last layer, which will recieve the imputed error from our loss function.<br>
 In this project, we will be using the Categorical Cross-Entropy Loss function, which is defined as follows:<br>  
 
-    $$E(\textbf{y},\hat{y}) = -\sum_{i} \textbf{y}_{i} \log(\hat{y_{i}})$$
+    $$E(\textbf{y},\hat{y}) = -\sum_i \textbf{y}_i \log (\hat{y_i})$$
 
-    , where $\textbf{y}$ is the real output distribution and $\hat{\textbf{y}}$ is the predicted output distribution. The Categorical Cross-entropy takes as input two discrete probability distributions, $\textbf{y}$ and $\hat{y}$, and outputs a single real-valued number representing the similarity of both probability distributions.
+    , where $\textbf{y}$ is the real output distribution and $\hat{\textbf{y}}$ is the predicted output distribution. 
+    The Categorical Cross-entropy takes as input two discrete probability distributions, $\textbf{y}$ and $\hat{y}$, and outputs a single real-valued number representing the similarity of both probability distributions.
 
 ### Basic Layers
 The Layer class will consist of 3 main methods:
@@ -138,12 +139,12 @@ $$
         - **Tanh**: 
             $$a_i(\bar{x}) = \frac{e^{x_i}-e^{-x_i}}{e^{x_i}+e^{-x_i}}$$  
 
-            $$\frac{\partial{a_i(\bar{x})}}{\partial{x_j}} = \left\{ 1 - a_i^2(\bar{x}) \ \ \ if \ \  j==i \atop \ \ \ \ \ \ \ 0  \ \ \ \ \ \ \ \ \ \ \ \ otherwise  \right.$$
+            $$\frac{\partial{a_i(\bar{x})}}{\partial{x_j}} = \left\lbrace 1 - a_i^2(\bar{x}) \ \ \ if \ \  j==i \atop \ \ \ \ \ \ \ 0  \ \ \ \ \ \ \ \ \ \ \ \ otherwise  \right.$$
 
         - **Softmax**: 
             $$a_i(\bar{x}) = \frac{e^{x_i}}{\sum_{j}e^{x_j}}$$  
 
-            $$\frac{\partial{a_i(\bar{x})}}{\partial{x_j}} = \left\{ a_i(\bar{x})(1-a_i(\bar{x})) \ \ \ if \ \  j==i \atop \ \ \ -a_i(\bar{x})a_j(\bar{x})  \ \ \ \ \ \ otherwise  \right. = a_i(\bar{x})(1\{i==j\}-a_j(\bar{x}))$$
+            $$\frac{\partial{a_i(\bar{x})}}{\partial{x_j}} = \left\lbrace a_i(\bar{x})(1-a_i(\bar{x})) \ \ \ if \ \  j==i \atop \ \ \ -a_i(\bar{x})a_j(\bar{x})  \ \ \ \ \ \ otherwise  \right. = a_i(\bar{x})(1\{i==j\}-a_j(\bar{x}))$$
 
 
     - **Forward Propagation**:  
@@ -170,11 +171,11 @@ $$
 \frac{\partial{E}}{\partial{y_1}}\frac{\partial{a_1(\bar{x})}}{\partial{x_2}}+\frac{\partial{E}}{\partial{y_2}}\frac{\partial{a_2(\bar{x})}}{\partial{x_2}}+\cdots+\frac{\partial{E}}{\partial{y_m}}\frac{\partial{a_m(\bar{x})}}{\partial{x_2}} \\
 \vdots \\
 \frac{\partial{E}}{\partial{y_1}}\frac{\partial{a_1(\bar{x})}}{\partial{x_n}}+\frac{\partial{E}}{\partial{y_2}}\frac{\partial{a_2(\bar{x})}}{\partial{x_n}}+\cdots+\frac{\partial{E}}{\partial{y_m}}\frac{\partial{a_m(\bar{x})}}{\partial{x_n}}
-\end{bmatrix} =
+\end{bmatrix}
 $$  
 
 $$
-\begin{bmatrix}
+= \begin{bmatrix}
 \frac{\partial{a_1(\bar{x})}}{\partial{x_1}} & \frac{\partial{a_1(\bar{x})}}{\partial{x_2}} & \cdots & \frac{\partial{a_1(\bar{x})}}{\partial{x_n}} \\
 \frac{\partial{a_2(\bar{x})}}{\partial{x_1}} & \frac{\partial{a_2(\bar{x})}}{\partial{x_2}} & \cdots & \frac{\partial{a_2(\bar{x})}}{\partial{x_n}} \\
 \vdots & \vdots & \ddots & \vdots \\
