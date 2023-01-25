@@ -92,13 +92,13 @@ We will take advantage of the modular approach of the neural network to define t
             Extrapolating to matrix notation:
             $$\frac{\partial{E}}{\partial{\bar{W}}} = \frac{\partial{E}}{\partial{\bar{y}}}\bar{x}^T$$
             $$\frac{\partial{E}}{\partial{\bar{b}}} = \frac{\partial{E}}{\partial{\bar{y}}}$$
-            Then, we update the weights and the bias using the gradient descent algorithm:
+            Then, we update the weights and the biases using the gradient descent algorithm:
             $$\bar{W} = \bar{W} - \alpha\frac{\partial{E}}{\partial{\bar{W}}}$$
             $$\bar{b} = \bar{b} - \alpha\frac{\partial{E}}{\partial{\bar{b}}}$$
             Where $\alpha$ is the learning rate.
         
         
-        - **Imputed Error**:
+        - **Imputed Error**:  
             This time, since $x_i$ is distributed in all the neurons of the next layer, we have to sum all the partial derivatives of the next layer with respect to $x_i$:
             $$\frac{\partial{E}}{\partial{x_i}} = \sum_{j}\frac{\partial{E}}{\partial{y_j}}\frac{\partial{y_j}}{\partial{x_i}} = \sum_{j}\frac{\partial{E}}{\partial{y_j}}w_{ji}$$
             Extrapolating to matrix notation:  
@@ -144,7 +144,7 @@ $$
         - **Softmax**: 
             $$a_i(\bar{x}) = \frac{e^{x_i}}{\sum_{j}e^{x_j}}$$  
 
-            $$\frac{\partial{a_i(\bar{x})}}{\partial{x_j}} = \left\lbrace a_i(\bar{x})(1-a_i(\bar{x})) \ \ \ if \ \  j==i \atop \ \ \ -a_i(\bar{x})a_j(\bar{x})  \ \ \ \ \ \ otherwise  \right. = a_i(\bar{x})(1\{i==j\}-a_j(\bar{x}))$$
+            $$\frac{\partial{a_i(\bar{x})}}{\partial{x_j}} = \left\lbrace a_i(\bar{x})(1-a_i(\bar{x})) \ \ \ if \ \  j==i \atop \ \ \ -a_i(\bar{x})a_j(\bar{x})  \ \ \ \ \ \ otherwise  \right. = a_i(\bar{x})(1 \lbrace i==j \rbrace -a_j(\bar{x}))$$
 
 
     - **Forward Propagation**:  
@@ -161,16 +161,17 @@ $$
 
                       
 $$
-\frac{\partial{E}}{\partial{\bar{x}}} = \begin{bmatrix}\frac{\partial{E}}{\partial{x_1}} \\
+\frac{\partial{E}}{\partial{\bar{x}}} = 
+\begin{bmatrix}\frac{\partial{E}}{\partial{x_1}} \\ 
 \frac{\partial{E}}{\partial{x_2}} \\ 
 \vdots \\ 
 \frac{\partial{E}}{\partial{x_n}}
 \end{bmatrix} =
 \begin{bmatrix}
-\frac{\partial{E}}{\partial{y_1}}\frac{\partial{a_1(\bar{x})}}{\partial{x_1}}+\frac{\partial{E}}{\partial{y_2}}\frac{\partial{a_2(\bar{x})}}{\partial{x_1}}+\cdots+\frac{\partial{E}}{\partial{y_m}}\frac{\partial{a_m(\bar{x})}}{\partial{x_1}} \\
-\frac{\partial{E}}{\partial{y_1}}\frac{\partial{a_1(\bar{x})}}{\partial{x_2}}+\frac{\partial{E}}{\partial{y_2}}\frac{\partial{a_2(\bar{x})}}{\partial{x_2}}+\cdots+\frac{\partial{E}}{\partial{y_m}}\frac{\partial{a_m(\bar{x})}}{\partial{x_2}} \\
-\vdots \\
-\frac{\partial{E}}{\partial{y_1}}\frac{\partial{a_1(\bar{x})}}{\partial{x_n}}+\frac{\partial{E}}{\partial{y_2}}\frac{\partial{a_2(\bar{x})}}{\partial{x_n}}+\cdots+\frac{\partial{E}}{\partial{y_m}}\frac{\partial{a_m(\bar{x})}}{\partial{x_n}}
+\frac{\partial{E}}{\partial{y_1}}\frac{\partial{a_1(\bar{x})}}{\partial{x_1}}+\frac{\partial{E}}{\partial{y_2}}\frac{\partial{a_2(\bar{x})}}{\partial{x_1}}+\cdots+\frac{\partial{E}}{\partial{y_m}}\frac{\partial{a_m(\bar{x})}}{\partial{x_1}} \\ 
+\frac{\partial{E}}{\partial{y_1}}\frac{\partial{a_1(\bar{x})}}{\partial{x_2}}+\frac{\partial{E}}{\partial{y_2}}\frac{\partial{a_2(\bar{x})}}{\partial{x_2}}+\cdots+\frac{\partial{E}}{\partial{y_m}}\frac{\partial{a_m(\bar{x})}}{\partial{x_2}} \\ 
+\vdots \\ 
+\frac{\partial{E}}{\partial{y_1}}\frac{\partial{a_1(\bar{x})}}{\partial{x_n}}+\frac{\partial{E}}{\partial{y_2}}\frac{\partial{a_2(\bar{x})}}{\partial{x_n}}+\cdots+\frac{\partial{E}}{\partial{y_m}}\frac{\partial a_m(\bar x) }{\partial x_n}
 \end{bmatrix}
 $$  
 
@@ -197,22 +198,23 @@ $$
             $$\frac{\partial{E(\textbf{y},\bar{x})}}{\partial{x_i}} = - \sum_j \textbf{y}_j \frac{\partial{\log{x_j}}}{\partial{x_i}} = - \frac{\textbf{y}_i}{x_i}$$
             , where $\textbf{y}$ is the real output of the network and $\bar{x}$ is the output of the last layer of the network, i.e. the predicted output.  
     
-    We can check that this works, calculating what would be the $\frac{\partial{E}}{\partial{\bar{z}}}$, where $z$ is the output of the last activation layer, in our case, a softmax layer. For simplicity, lets call $s_i(z_i)$ the softmax function.
-    $$\frac{\partial{E}}{\partial{z_i}} = \sum_j \frac{\partial{E}}{\partial{s_j}}\frac{\partial{s_j}}{\partial{z_i}} = \sum_j (-\frac{\textbf{y}_j}{s_j})(s_j(1\{i==j\}-s_i))$$
-    $$ = \sum_j -\textbf{y}_j(1\{i==j\}-s_i) = \sum_j -\textbf{y}_j(1\{i==j\}-s_i) = -\textbf{y}_i + \sum_j \textbf{y}_j s_i$$
-    $$ = -\textbf{y}_i + \textbf{y}_i s_i = s_i - \textbf{y}_i$$  
+    We can check that this works, calculating what would be the $\frac{\partial{E}}{\partial{\bar{z}}}$, where $z$ is the input of the last activation layer, in our case, a softmax layer. For simplicity, lets call $\bar s (\bar z)$ the softmax function.
+    $$\frac{\partial{E}}{\partial{z_i}} = \sum_j \frac{\partial{E}}{\partial{s_j}}\frac{\partial{s_j}}{\partial{z_i}} = \sum_j \left(-\frac{\textbf{y}_j}{s_j}\right)(s_j(1\lbrace i==j\rbrace -s_i))$$
+    $$= \sum_j -\textbf{y}_j(1 \lbrace i==j \rbrace -s_i) = -\textbf{y}_i + \sum_j \textbf{y}_j s_i = -\textbf{y}_i + \textbf{y}_i s_i = s_i - \textbf{y}_i$$  
 
-    Vectorizing this, we get:
+    Vectorizing this, we get:  
 
-    $$\frac{\partial{E}}{\partial{\bar{z}}} = \begin{bmatrix}\frac{\partial{E}}{\partial{z_1}} \\
-    \frac{\partial{E}}{\partial{z_2}} \\
-    \vdots \\
-    \frac{\partial{E}}{\partial{z_n}}
-    \end{bmatrix} = \begin{bmatrix}s_1 - \textbf{y}_1 \\
-    s_2 - \textbf{y}_2 \\
-    \vdots \\
-    s_n - \textbf{y}_n
-    \end{bmatrix} = \bar{s} - \textbf{y}$$
+$$\frac{\partial{E}}{\partial{\bar{z}}} = 
+\begin{bmatrix}\frac{\partial{E}}{\partial{z_1}} \\ 
+\frac{\partial{E}}{\partial{z_2}} \\ 
+\vdots \\ 
+\frac{\partial{E}}{\partial{z_n}}
+\end{bmatrix} = \begin{bmatrix}s_1 - \textbf{y}_1 \\ 
+s_2 - \textbf{y}_2 \\ 
+\vdots \\ 
+s_n - \textbf{y}_n
+\end{bmatrix} = \bar{s} - \textbf{y}
+$$
 
 ## Getting Started
 Use the following instructions to get a copy of the project up and running on your local machine.
