@@ -136,15 +136,14 @@ $$
     - **Activation Functions**: Here we'll use two activation functions:  
 
         - **Tanh**: 
-            $$a_i(\bar{x}) = \frac{e^{x_i}-e^{-x_i}}{e^{x_i}+e^{-x_i}}$$   
+            $$a_i(\bar{x}) = \frac{e^{x_i}-e^{-x_i}}{e^{x_i}+e^{-x_i}}$$  
 
             $$\frac{\partial{a_i(\bar{x})}}{\partial{x_j}} = \left\{ 1 - a_i^2(\bar{x}) \ \ \ if \ \  j==i \atop \ \ \ \ \ \ \ 0  \ \ \ \ \ \ \ \ \ \ \ \ otherwise  \right.$$
 
-        - **Softmax**:
-            
+        - **Softmax**: 
             $$a_i(\bar{x}) = \frac{e^{x_i}}{\sum_{j}e^{x_j}}$$  
 
-            $$\frac{\partial{a_i(\bar{x})}}{\partial{x_j}} = \left\{ a_i(\bar{x})(1-a_i(\bar{x})) if j==i \atop -a_i(\bar{x})a_j(\bar{x}) otherwise \right. = a_i(\bar{x})(1\{i==j\}-a_j(\bar{x}))$$
+            $$\frac{\partial{a_i(\bar{x})}}{\partial{x_j}} = \left\{ a_i(\bar{x})(1-a_i(\bar{x})) \ \ \ if \ \  j==i \atop \ \ \ -a_i(\bar{x})a_j(\bar{x})  \ \ \ \ \ \ otherwise  \right. = a_i(\bar{x})(1\{i==j\}-a_j(\bar{x}))$$
 
 
     - **Forward Propagation**:  
@@ -157,9 +156,9 @@ $$
 
             $$\frac{\partial{E}}{\partial{x_i}} = \sum_{j}\frac{\partial{E}}{\partial{y_j}}\frac{\partial{y_j}}{\partial{x_i}} = \sum_{j}\frac{\partial{E}}{\partial{y_j}}\frac{\partial{a_j(\bar{x})}}{\partial{x_i}}$$  
             
-            Extrapolating to matrix notation:              
+            Extrapolating to matrix notation:  
 
-
+                      
 $$
 \frac{\partial{E}}{\partial{\bar{x}}} = \begin{bmatrix}\frac{\partial{E}}{\partial{x_1}} \\
 \frac{\partial{E}}{\partial{x_2}} \\ 
@@ -171,11 +170,11 @@ $$
 \frac{\partial{E}}{\partial{y_1}}\frac{\partial{a_1(\bar{x})}}{\partial{x_2}}+\frac{\partial{E}}{\partial{y_2}}\frac{\partial{a_2(\bar{x})}}{\partial{x_2}}+\cdots+\frac{\partial{E}}{\partial{y_m}}\frac{\partial{a_m(\bar{x})}}{\partial{x_2}} \\
 \vdots \\
 \frac{\partial{E}}{\partial{y_1}}\frac{\partial{a_1(\bar{x})}}{\partial{x_n}}+\frac{\partial{E}}{\partial{y_2}}\frac{\partial{a_2(\bar{x})}}{\partial{x_n}}+\cdots+\frac{\partial{E}}{\partial{y_m}}\frac{\partial{a_m(\bar{x})}}{\partial{x_n}}
-\end{bmatrix} =
+\end{bmatrix}
 $$  
 
 $$
-\begin{bmatrix}
+= \begin{bmatrix}
 \frac{\partial{a_1(\bar{x})}}{\partial{x_1}} & \frac{\partial{a_1(\bar{x})}}{\partial{x_2}} & \cdots & \frac{\partial{a_1(\bar{x})}}{\partial{x_n}} \\
 \frac{\partial{a_2(\bar{x})}}{\partial{x_1}} & \frac{\partial{a_2(\bar{x})}}{\partial{x_2}} & \cdots & \frac{\partial{a_2(\bar{x})}}{\partial{x_n}} \\
 \vdots & \vdots & \ddots & \vdots \\
