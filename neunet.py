@@ -39,7 +39,9 @@ class NeuNet:
                 xs, e = self.forward_propagation(x, y)
                 self.backward_propagation(xs, y)
                 error += e
-            errors.append(e / len(X))
+            print(error / len(X), end="\r")
+            errors.append(error / len(X))
+
         plt.plot(errors)
         plt.show()
 
@@ -80,9 +82,10 @@ class Dense(TrainableLayer):
         return np.dot(self.weights, x) + self.biases
 
     def backward(self, x, error, learning_rate):
+        dedx = np.dot(self.weights.T, error)
         self.weights -= learning_rate * np.dot(error, x.T)
         self.biases -= learning_rate * error
-        return np.dot(self.weights.T, error)
+        return dedx
 
 
 class Tanh(NonTrainableLayer):
@@ -147,15 +150,22 @@ class CrossEntropy(NonTrainableLayer):
         super().__init__()
 
     def error(self, x, y):
-        # print("ERROR")
-        # print(x)
-        # print(y)
-        # print(-np.sum(y * np.log(x)))
-        # input()
         return -np.sum(y * np.log(x))
 
     def backward(self, x, y):
         return -y / x
+
+
+class BinaryCrossEntropy(NonTrainableLayer):
+    def __init__(self, input_size: int) -> None:
+        self.input_size = input_size
+        super().__init__()
+
+    def error(self, x, y):
+        return -np.mean(y * np.log(x) + (1 - y) * np.log(1 - x))
+
+    def backward(self, x, y):
+        return (x - y) / (x * (1 - x) * self.input_size)
 
 
 class MSE(NonTrainableLayer):
@@ -164,53 +174,73 @@ class MSE(NonTrainableLayer):
         super().__init__()
 
     def error(self, x, y):
-        return np.sum((x - y) ** 2) / 2
+        return 2*np.mean(np.power(x - y, 2))
 
     def backward(self, x, y):
-        return x - y
+        return 2*(x - y)/self.input_size
 
 
+# Problem 1
 # XOR
 
 # X = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
-# Y = np.array([[1, 0], [0, 1], [0, 1], [1, 0]])
+# Y = np.array([[0], [1], [1], [0]])
 
 # layers = [
 #     Dense(2, 2),
 #     Sigmoid(2),
-#     Dense(2, 2),
-#     Softmax(2),
-#     CrossEntropy(2),
+#     Dense(2, 1),
+#     Sigmoid(1),
+#     BinaryCrossEntropy(1)
 # ]
 
-# Bin to Dec
-X = np.array(
-    [
-        [0, 0, 0],
-        [0, 0, 1],
-        [0, 1, 0],
-        [0, 1, 1],
-        [1, 0, 0],
-        [1, 0, 1],
-        [1, 1, 0],
-        [1, 1, 1],
-    ]
-)
-Y = np.array([[0], [1], [2], [3], [4], [5], [6], [7]])
+# nn = NeuNet(layers, 1)
+
+# nn.train(X, Y, 20000)
+
+# print(nn.forward(X[0]))
+# print(nn.forward(X[1]))
+# print(nn.forward(X[2]))
+# print(nn.forward(X[3]))
+
+
+# Binary Classifier for circular data
+
+X = np.random.rand(400,2)
+Y = np.array([])
+for x, y in X:
+    if (x - 0.5)**2 + (y - 0.5)**2 < 0.2**2:
+        Y = np.append(Y, [1, 0, 0])
+    elif x < 0.5:
+        Y = np.append(Y, [0, 1, 0])
+    else:
+        Y = np.append(Y, [0, 0, 1])
+
+Y = Y.reshape(400, 3)
 
 layers = [
+    Dense(2, 3),
+    Sigmoid(3),
     Dense(3, 3),
     Sigmoid(3),
-    Dense(3, 1),
-    MSE(1),
+    Dense(3, 3),
+    Softmax(3),
+    CrossEntropy(3)
 ]
-
 
 nn = NeuNet(layers, 0.1)
 
-nn.train(X, Y, 1000)
+nn.train(X, Y, 500)
 
-print(nn.forward(X[0]))
-print(nn.forward(X[1]))
-print(nn.forward(X[2]))
-print(nn.forward(X[3]))
+
+plt.figure()
+plt.scatter(X[:,0], X[:,1], c=np.argmax(Y, axis=1))
+x = np.linspace(0, 1, 100)
+y = np.linspace(0, 1, 100)
+X, Y = np.meshgrid(x, y)
+Z = np.zeros((100, 100))
+for i in range(100):
+    for j in range(100):
+        Z[i, j] = np.argmax(nn.forward(np.array([X[i, j], Y[i, j]])))
+plt.contour(X, Y, Z, levels=[0.5, 1.5], colors='black')
+plt.show()
