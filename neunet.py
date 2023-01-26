@@ -1,4 +1,3 @@
-import cmath
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -43,8 +42,7 @@ class NeuNet:
             print(epoch, ":", error / len(X), end="\r")
             errors.append(error / len(X))
 
-        plt.plot(errors)
-        plt.show()
+        return errors
 
 
 class Layer:
@@ -229,11 +227,23 @@ layers = [
 
 nn = NeuNet(layers, 0.1)
 
-nn.train(X, Y, 250)
+errors = nn.train(X, Y, 250)
 
 
-plt.figure()
-plt.scatter(X[:, 0], X[:, 1], c=np.argmax(Y, axis=1))
+# Visualization
+fig = plt.figure("Classification Example", figsize=(12, 6))
+
+fig.suptitle("Visualization of Classification Example")
+
+# Error plot
+ax = plt.subplot(2, 2, 1)
+ax.set_title("Error")
+ax.plot(errors)
+
+# 2d plot of data
+ax = plt.subplot(2, 2, 3)
+ax.set_title("2D")
+ax.scatter(X[:, 0], X[:, 1], c=np.argmax(Y, axis=1))
 xs = np.linspace(0, 1, 100)
 ys = np.linspace(0, 1, 100)
 Xg, Yg = np.meshgrid(xs, ys)
@@ -243,11 +253,10 @@ for i in range(100):
         Z[i, j] = np.argmax(nn.forward(np.array([Xg[i, j], Yg[i, j]])))
 
 # Background color based on Z
-plt.imshow(Z, extent=[0, 1, 0, 1], origin="lower", alpha=0.2)
-plt.show()
+ax.imshow(Z, extent=[0, 1, 0, 1], origin="lower", alpha=0.2)
 
-# 3d plot of Z
-fig = plt.figure()
-ax = fig.add_subplot(111, projection="3d")
-ax.plot_surface(Xg, Yg, Z, cmap="viridis")
+# 3d plot of Z in the center of the second row
+ax = fig.add_subplot(1, 2, 2, projection="3d")
+ax.set_title("3D")
+ax.plot_surface(Xg, Yg, Z, cmap="viridis", edgecolor="none")
 plt.show()
