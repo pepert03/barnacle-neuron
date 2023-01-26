@@ -39,7 +39,7 @@ class NeuNet:
                 xs, e = self.forward_propagation(x, y)
                 self.backward_propagation(xs, y)
                 error += e
-            errors.append(e / len(X))
+            errors.append(error / len(X))
         plt.plot(errors)
         plt.show()
 
@@ -81,7 +81,7 @@ class Dense(TrainableLayer):
 
     def backward(self, x, error, learning_rate):
         self.weights -= learning_rate * np.dot(error, x.T)
-        self.biases -= learning_rate * error
+        self.biases -= learning_rate * error * 1
         return np.dot(self.weights.T, error)
 
 
@@ -147,15 +147,22 @@ class CrossEntropy(NonTrainableLayer):
         super().__init__()
 
     def error(self, x, y):
-        # print("ERROR")
-        # print(x)
-        # print(y)
-        # print(-np.sum(y * np.log(x)))
-        # input()
         return -np.sum(y * np.log(x))
 
     def backward(self, x, y):
         return -y / x
+
+
+class BinaryCrossEntropy(NonTrainableLayer):
+    def __init__(self, input_size: int) -> None:
+        self.input_size = input_size
+        super().__init__()
+
+    def error(self, x, y):
+        return -np.mean(y * np.log(x) + (1 - y) * np.log(1 - x))
+
+    def backward(self, x, y):
+        return (x - y) / (x * (1 - x) * self.input_size)
 
 
 class MSE(NonTrainableLayer):
@@ -172,43 +179,41 @@ class MSE(NonTrainableLayer):
 
 # XOR
 
-# X = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
-# Y = np.array([[1, 0], [0, 1], [0, 1], [1, 0]])
-
-# layers = [
-#     Dense(2, 2),
-#     Sigmoid(2),
-#     Dense(2, 2),
-#     Softmax(2),
-#     CrossEntropy(2),
-# ]
-
-# Bin to Dec
-X = np.array(
-    [
-        [0, 0, 0],
-        [0, 0, 1],
-        [0, 1, 0],
-        [0, 1, 1],
-        [1, 0, 0],
-        [1, 0, 1],
-        [1, 1, 0],
-        [1, 1, 1],
-    ]
-)
-Y = np.array([[0], [1], [2], [3], [4], [5], [6], [7]])
+X = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
+Y = np.array([[0], [1], [1], [0]])
 
 layers = [
-    Dense(3, 3),
-    Sigmoid(3),
-    Dense(3, 1),
-    MSE(1),
+    Dense(2, 2),
+    Sigmoid(2),
+    Dense(2, 1),
+    Sigmoid(1),
+    BinaryCrossEntropy(1),
 ]
+
+# Bin to Dec
+# X = np.array(
+#     [
+#         [0, 0, 0],
+#         [0, 0, 1],
+#         [0, 1, 0],
+#         [0, 1, 1],
+#         [1, 0, 0],
+#         [1, 0, 1],
+#         [1, 1, 0],
+#         [1, 1, 1],
+#     ]
+# )
+# Y = np.array([[0], [1], [2], [3], [4], [5], [6], [7]])
+
+# layers = [
+#     Dense(3, 1),
+#     MSE(1),
+# ]
 
 
 nn = NeuNet(layers, 0.1)
 
-nn.train(X, Y, 1000)
+nn.train(X, Y, 10000)
 
 print(nn.forward(X[0]))
 print(nn.forward(X[1]))

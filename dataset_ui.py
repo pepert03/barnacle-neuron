@@ -2,6 +2,7 @@ import os
 import pygame as pg
 import numpy as np
 import matplotlib.pyplot as plt
+from utils import normalize_center_scale
 
 # Initialize pygame
 pg.init()
@@ -40,18 +41,21 @@ def save(label: int | str, board: list[list[int]]):
         next_image += 1
 
     # Reduce resolution to 28x28 using mean
-    img = [[0 for _ in range(28)] for _ in range(28)]
-    WIDTH = RESOLUTION // 28
-    HEIGHT = RESOLUTION // 28
-    for y in range(28):
-        for x in range(28):
-            for i in range(HEIGHT):
-                for j in range(WIDTH):
-                    img[y][x] += board[y * HEIGHT + i][x * WIDTH + j]
-            img[y][x] /= 28**2
+    # img = [[0 for _ in range(28)] for _ in range(28)]
+    # WIDTH = RESOLUTION // 28
+    # HEIGHT = RESOLUTION // 28
+    # for y in range(28):
+    #     for x in range(28):
+    #         for i in range(HEIGHT):
+    #             for j in range(WIDTH):
+    #                 img[y][x] += board[y * HEIGHT + i][x * WIDTH + j]
+    #         img[y][x] /= 28**2
 
     # Convert to image
-    image = np.array(img).reshape(28, 28)
+    # image = np.array(img).reshape(28, 28)
+
+    image = np.array(board).reshape(RESOLUTION, RESOLUTION)
+    image = normalize_center_scale(image, 28, int(RESOLUTION * 0.1))
 
     # Save image
     plt.imsave(f"data/{label}/{next_image}.png", image, cmap="gray")
