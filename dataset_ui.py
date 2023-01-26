@@ -9,8 +9,8 @@ pg.init()
 pg.display.set_caption("Dataset UI")
 
 # Constants
-RESOLUTION = 28 * 10
-BRUSH_SIZE = 35
+RESOLUTION = 28 * 5
+BRUSH_SIZE = 20
 
 
 def draw_board(board: list[list[int]], screen: pg.Surface):
@@ -20,7 +20,7 @@ def draw_board(board: list[list[int]], screen: pg.Surface):
     for y in range(RESOLUTION):
         for x in range(RESOLUTION):
             g = int(255 * board[y][x])
-            pg.draw.rect(screen, (g, g, g), (x, y, 1, 1))
+            pg.draw.rect(screen, (g, g, g), (x*4, y*4, 4, 4))
 
 
 def save(label: int | str, board: list[list[int]]):
@@ -82,7 +82,7 @@ def main():
     """
 
     # Initialize screen
-    screen = pg.display.set_mode((RESOLUTION, RESOLUTION))
+    screen = pg.display.set_mode((RESOLUTION*4, RESOLUTION*4))
 
     # Initialize black board
     board = [[0 for _ in range(RESOLUTION)] for _ in range(RESOLUTION)]
@@ -115,6 +115,7 @@ def main():
         mouse = pg.mouse.get_pressed()
         if any(mouse):
             j, i = pg.mouse.get_pos()
+            j, i = j // 4, i // 4
             color = 1 if mouse[0] else 0
             board[i][j] = color
             for ci, cj in get_neighbours(j, i):
