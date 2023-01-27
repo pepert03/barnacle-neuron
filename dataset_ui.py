@@ -13,7 +13,7 @@ pg.display.set_caption("Dataset UI")
 SCREEN_RESOLUTION = 28 * 4
 RESOLUTION = 28
 PIXEL_SIZE = 4
-BRUSH_SIZE = 16
+BRUSH_SIZE = 14
 
 
 def draw_board(board: list[list[int]], screen: pg.Surface):
