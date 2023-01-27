@@ -2,7 +2,7 @@ import os
 import pygame as pg
 import numpy as np
 import matplotlib.pyplot as plt
-from utils import normalize_center_scale
+from package.utils import normalize_center_scale
 
 
 # Initialize pygame

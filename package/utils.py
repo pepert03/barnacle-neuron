@@ -17,13 +17,13 @@ def load_image(path, res, grey=False):
     return img
 
 
-def normalize_center_scale(img, res, pad=4, display=False):
+def normalize_center_scale(img, res, pad=4):
     """
     1. Normalize image, setting its lowest value to 0 and its highest to 1
     2. Crop image to Bound Box
     3. Square image padding with 0s
     4. Pad image
-    6. Resize image to res x res
+    5. Resize image to res x res
     """
 
     # Normalize
