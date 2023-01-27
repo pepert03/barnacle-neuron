@@ -1,141 +1,109 @@
-import os
 import pygame as pg
-import numpy as np
-import matplotlib.pyplot as plt
-from package.utils import normalize_center_scale
+import pandas as pd
+import neunet as nn
 
-
-# Initialize pygame
 pg.init()
-pg.display.set_caption("Dataset UI")
-
-# Constants
-SCREEN_RESOLUTION = 28 * 4
-RESOLUTION = 28
-PIXEL_SIZE = 4
-BRUSH_SIZE = 16
+L = 28
+WIN = pg.display.set_mode((L * 10, L * 10 + 50))
+pg.display.set_caption("Numbers")
+font = pg.font.SysFont("comicsans", 30)
 
 
-def draw_board(board: list[list[int]], screen: pg.Surface):
-    """
-    Draw image pixel by pixel in the pygame screen.
-    """
-    for y in range(SCREEN_RESOLUTION):
-        for x in range(SCREEN_RESOLUTION):
-            g = int(255 * board[y][x])
+def draw_gameboard(board, sol, num):
+    for y in range(L):
+        for x in range(L):
+            n = board[y][x]
             pg.draw.rect(
-                screen,
-                (g, g, g),
-                (x * PIXEL_SIZE, y * PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE),
+                WIN,
+                (int(255 * n), int(255 * n), int(255 * n)),
+                (x * 10, y * 10, 10, 10),
             )
 
-
-def predict_label(label: int | str, board: list[list[int]]):
-    """
-    Converts the screen to a numpy array, and feeds it to a nn to predict the label
-    """
-
-    # Create folders if they don't exist
-    if not os.path.exists("data"):
-        os.mkdir("data")
-    if not os.path.exists(f"data/{label}"):
-        os.mkdir(f"data/{label}")
-
-    # Find next image number
-    next_image = 0
-    while os.path.exists(f"data/{label}/{next_image}.png"):
-        next_image += 1
-
-    image = np.array(board).reshape(SCREEN_RESOLUTION, SCREEN_RESOLUTION)
-    image = normalize_center_scale(image, RESOLUTION, int(SCREEN_RESOLUTION * 0.1))
-
-    # Save image
-    plt.imsave(f"data/{label}/{next_image}.png", image, cmap="gray")
-
-
-def get_neighbours(x: int, y: int):
-    """
-    Returns a generator of the surrounding pixels of a pixel, that are inside the brush size,
-    wich is a circle.
-    """
-    for i in range(-BRUSH_SIZE // 2, BRUSH_SIZE // 2 + 1):
-        for j in range(-BRUSH_SIZE // 2, BRUSH_SIZE // 2 + 1):
-            # Euclidean distance
-            d = ((i) ** 2 + (j) ** 2) ** 0.5
-            if 0 < d <= BRUSH_SIZE // 2:
-                if 0 <= x + i < SCREEN_RESOLUTION and 0 <= y + j < SCREEN_RESOLUTION:
-                    yield (y + j, x + i)
+    for i in range(10):
+        color = (int(200 * sol[i]) + 55, int(200 * sol[i]) + 55, int(200 * sol[i]) + 55)
+        text = font.render(f"{i}", 1, color)
+        WIN.blit(text, (i * 28 + 5, L * 10))
+        if i == num:
+            dot = font.render(".", 1, color)
+            WIN.blit(dot, (i * 28 + 10, L * 10 + 10))
+        else:
+            dot = font.render(".", 1, (0, 0, 0))
+            WIN.blit(dot, (i * 28 + 10, L * 10 + 10))
 
 
 def main():
-    """
-    Create a screen to draw numbers and save them in the data folder,
-    each number is saved in a folder with its label.
-    """
-
-    # Initialize screen
-    screen = pg.display.set_mode(
-        (SCREEN_RESOLUTION * PIXEL_SIZE, SCREEN_RESOLUTION * PIXEL_SIZE)
-    )
-
-    # Initialize black board
-    board = [[0 for _ in range(SCREEN_RESOLUTION)] for _ in range(SCREEN_RESOLUTION)]
-
-    # Image label
-    label = -1
-
-    # Initialize clock with 60 FPS
+    board = [[0 for _ in range(L)] for _ in range(L)]
     clock = pg.time.Clock()
-    FPS = 120
-
+    export = -1
     run = True
+    sol = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    num = -1
     while run:
-
-        # Events
+        clock.tick(120)
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 run = False
+
             if event.type == pg.KEYUP:
-                if pg.K_0 <= event.key <= pg.K_9:
-                    label = event.key - pg.K_0
                 if event.key == pg.K_RETURN:
-                    board = [
-                        [0 for _ in range(SCREEN_RESOLUTION)]
-                        for _ in range(SCREEN_RESOLUTION)
-                    ]
-                if event.key == pg.K_BACKSPACE:
-                    board = [
-                        [0 for _ in range(SCREEN_RESOLUTION)]
-                        for _ in range(SCREEN_RESOLUTION)
-                    ]
-                if event.key == pg.K_ESCAPE:
-                    run = False
+                    if export == -1:
+                        export = 0
+                    if export == 1:
+                        export = -1
+                        board = [[0 for x in range(L)] for y in range(L)]
+                        sol = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+                        num = -1
 
-        # Paint brush
-        mouse = pg.mouse.get_pressed()
-        if any(mouse):
-            j, i = pg.mouse.get_pos()
-            j, i = j // PIXEL_SIZE, i // PIXEL_SIZE
-            color = 1 if mouse[0] else 0
-            board[i][j] = color
-            for ci, cj in get_neighbours(j, i):
-                board[ci][cj] = color
+        if export == -1:
 
-        # Save image
-        if label != -1:
-            save(label, board)
-            board = [
-                [0 for _ in range(SCREEN_RESOLUTION)] for _ in range(SCREEN_RESOLUTION)
-            ]
-            label = -1
+            mouse = pg.mouse.get_pressed()
+            if mouse[0]:
+                x, y = pg.mouse.get_pos()
+                x, y = x // 10, y // 10
+                if x < L and y < L:
+                    board[y][x] = 1
+                    if x < L - 1:
+                        board[y][x + 1] = (1 + board[y][x + 1]) / 2
+                    if x > 0:
+                        board[y][x - 1] = (1 + board[y][x - 1]) / 2
+                    if y < L - 1:
+                        board[y + 1][x] = (1 + board[y + 1][x]) / 2
+                    if y > 0:
+                        board[y - 1][x] = (1 + board[y - 1][x]) / 2
 
-        # Draw
-        draw_board(board, screen)
+            if mouse[2]:
+                x, y = pg.mouse.get_pos()
+                x, y = x // 10, y // 10
+                if x < L and y < L:
+                    board[y][x] = 0
+                    if x < L - 1:
+                        board[y][x + 1] = 0
+                    if x > 0:
+                        board[y][x - 1] = 0
+                    if y < L - 1:
+                        board[y + 1][x] = 0
+                    if y > 0:
+                        board[y - 1][x] = 0
+        if export == 0:
+            board_list = []
+            for y in range(L):
+                for x in range(L):
+                    board_list.append(int(board[y][x] * 255))
+            df = pd.DataFrame(columns=["data", "label"])
+            df.loc[0] = [board_list, export]
+            df.to_csv(f"numero.csv", index=False)
+            export = 1
+            sol = nn.test()
+            num = sol.index(max(sol))
+
+            total = sum(sol)
+            for i in range(10):
+                sol[i] /= total
+
+        draw_gameboard(board, sol, num)
         pg.display.update()
-        clock.tick(FPS)
 
     pg.quit()
-    print("Bye!")
 
 
 if __name__ == "__main__":
