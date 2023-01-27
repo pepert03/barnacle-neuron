@@ -1,6 +1,6 @@
 import pygame as pg
 import pandas as pd
-import neunet as nn
+import package.neunet as nn
 
 pg.init()
 L = 28
