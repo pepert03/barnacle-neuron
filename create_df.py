@@ -11,8 +11,10 @@ def create_df():
         if folder != 'data.csv':
             for file in os.listdir('data/' + folder):
                 img = plt.imread('data/' + folder + '/' + file)
-                gray = (np.mean(img, axis=2).reshape(1,-1)*255).astype(np.uint8).tolist()[0]
-                df.loc[len(df)] = [gray, folder]
+                data = (np.mean(img, axis=2).reshape(1,-1)*255).astype(np.uint8).tolist()[0]
+                label = [0 for i in range(10)]
+                label[int(folder)] = 1
+                df.loc[len(df)] = [data, label]
     return df
 
 
