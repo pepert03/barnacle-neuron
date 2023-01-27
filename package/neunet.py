@@ -36,13 +36,26 @@ class NeuNet:
             for x, y in zip(X, Y):
                 x = x.reshape(x.shape[0], 1)
                 y = y.reshape(y.shape[0], 1)
+                # print("Forward propagation...")
                 xs, e = self.forward_propagation(x, y)
+                # print("Backward propagation...")
                 self.backward_propagation(xs, y)
                 error += e
             print(epoch, ":", error / len(X), end="\r")
             errors.append(error / len(X))
         print(epoch, ":", error / len(X))
         return errors
+
+    def test(self, X, Y):
+        correct = 0
+        for x, y in zip(X, Y):
+            x = x.reshape(x.shape[0], 1)
+            y = y.reshape(y.shape[0], 1)
+            y_true = np.argmax(y)
+            y_pred = np.argmax(self.forward(x))
+            if y_true == y_pred:
+                correct += 1
+        return correct / len(X)
 
 
 class Layer:
