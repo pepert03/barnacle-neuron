@@ -17,7 +17,7 @@ def load_image(path, res, grey=False):
     return img
 
 
-def normalize_center_scale(img, res, pad=4):
+def normalize_center_scale(img, res, pad=4, display=False):
     """
     1. Normalize image, setting its lowest value to 0 and its highest to 1
     2. Crop image to Bound Box
@@ -25,8 +25,6 @@ def normalize_center_scale(img, res, pad=4):
     4. Pad image
     6. Resize image to res x res
     """
-
-    plt.axis("off")
 
     # Normalize
     img = img - img.min()
@@ -40,11 +38,6 @@ def normalize_center_scale(img, res, pad=4):
     # Crop image
     img_crop = img[y1 : y2 + 1, x1 : x2 + 1].copy()
 
-    # Display crop image
-    plt.subplot(2, 2, 1)
-    plt.imshow(img_crop, cmap="gray")
-    plt.title(f"Crop {img_crop.shape}")
-
     # Square image
     h, w = img_crop.shape
     if h > w:
@@ -52,27 +45,10 @@ def normalize_center_scale(img, res, pad=4):
     elif w > h:
         img_crop = np.pad(img_crop, (((w - h) // 2, (w - h) // 2), (0, 0)), "constant")
 
-    # Display square image
-    plt.subplot(2, 2, 2)
-    plt.imshow(img_crop, cmap="gray")
-    plt.title(f"Square {img_crop.shape}")
-
     # Pad image
     img_crop = np.pad(img_crop, pad, "constant")
 
-    # Display padded image
-    plt.subplot(2, 2, 3)
-    plt.imshow(img_crop, cmap="gray")
-    plt.title(f"Pad {img_crop.shape}")
-
     # Resize image using avg pooling
     img_final = cv2.resize(img_crop, (res, res), interpolation=cv2.INTER_AREA)
-
-    # Display resized image
-    plt.subplot(2, 2, 4)
-    plt.imshow(img_final, cmap="gray")
-    plt.title(f"Resize {img_final.shape}")
-
-    plt.show()
 
     return img_final

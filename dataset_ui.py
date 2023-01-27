@@ -4,23 +4,30 @@ import numpy as np
 import matplotlib.pyplot as plt
 from utils import normalize_center_scale
 
+
 # Initialize pygame
 pg.init()
 pg.display.set_caption("Dataset UI")
 
 # Constants
-RESOLUTION = 28 * 5
-BRUSH_SIZE = 20
+SCREEN_RESOLUTION = 28 * 4
+RESOLUTION = 28
+PIXEL_SIZE = 4
+BRUSH_SIZE = 16
 
 
 def draw_board(board: list[list[int]], screen: pg.Surface):
     """
     Draw image pixel by pixel in the pygame screen.
     """
-    for y in range(RESOLUTION):
-        for x in range(RESOLUTION):
+    for y in range(SCREEN_RESOLUTION):
+        for x in range(SCREEN_RESOLUTION):
             g = int(255 * board[y][x])
-            pg.draw.rect(screen, (g, g, g), (x*4, y*4, 4, 4))
+            pg.draw.rect(
+                screen,
+                (g, g, g),
+                (x * PIXEL_SIZE, y * PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE),
+            )
 
 
 def save(label: int | str, board: list[list[int]]):
@@ -40,22 +47,8 @@ def save(label: int | str, board: list[list[int]]):
     while os.path.exists(f"data/{label}/{next_image}.png"):
         next_image += 1
 
-    # Reduce resolution to 28x28 using mean
-    # img = [[0 for _ in range(28)] for _ in range(28)]
-    # WIDTH = RESOLUTION // 28
-    # HEIGHT = RESOLUTION // 28
-    # for y in range(28):
-    #     for x in range(28):
-    #         for i in range(HEIGHT):
-    #             for j in range(WIDTH):
-    #                 img[y][x] += board[y * HEIGHT + i][x * WIDTH + j]
-    #         img[y][x] /= 28**2
-
-    # Convert to image
-    # image = np.array(img).reshape(28, 28)
-
-    image = np.array(board).reshape(RESOLUTION, RESOLUTION)
-    image = normalize_center_scale(image, 28, int(RESOLUTION * 0.1))
+    image = np.array(board).reshape(SCREEN_RESOLUTION, SCREEN_RESOLUTION)
+    image = normalize_center_scale(image, RESOLUTION, int(SCREEN_RESOLUTION * 0.1))
 
     # Save image
     plt.imsave(f"data/{label}/{next_image}.png", image, cmap="gray")
@@ -71,7 +64,7 @@ def get_neighbours(x: int, y: int):
             # Euclidean distance
             d = ((i) ** 2 + (j) ** 2) ** 0.5
             if 0 < d <= BRUSH_SIZE // 2:
-                if 0 <= x + i < RESOLUTION and 0 <= y + j < RESOLUTION:
+                if 0 <= x + i < SCREEN_RESOLUTION and 0 <= y + j < SCREEN_RESOLUTION:
                     yield (y + j, x + i)
 
 
@@ -82,10 +75,12 @@ def main():
     """
 
     # Initialize screen
-    screen = pg.display.set_mode((RESOLUTION*4, RESOLUTION*4))
+    screen = pg.display.set_mode(
+        (SCREEN_RESOLUTION * PIXEL_SIZE, SCREEN_RESOLUTION * PIXEL_SIZE)
+    )
 
     # Initialize black board
-    board = [[0 for _ in range(RESOLUTION)] for _ in range(RESOLUTION)]
+    board = [[0 for _ in range(SCREEN_RESOLUTION)] for _ in range(SCREEN_RESOLUTION)]
 
     # Image label
     label = -1
@@ -105,9 +100,15 @@ def main():
                 if pg.K_0 <= event.key <= pg.K_9:
                     label = event.key - pg.K_0
                 if event.key == pg.K_RETURN:
-                    board = [[0 for _ in range(RESOLUTION)] for _ in range(RESOLUTION)]
+                    board = [
+                        [0 for _ in range(SCREEN_RESOLUTION)]
+                        for _ in range(SCREEN_RESOLUTION)
+                    ]
                 if event.key == pg.K_BACKSPACE:
-                    board = [[0 for _ in range(RESOLUTION)] for _ in range(RESOLUTION)]
+                    board = [
+                        [0 for _ in range(SCREEN_RESOLUTION)]
+                        for _ in range(SCREEN_RESOLUTION)
+                    ]
                 if event.key == pg.K_ESCAPE:
                     run = False
 
@@ -115,7 +116,7 @@ def main():
         mouse = pg.mouse.get_pressed()
         if any(mouse):
             j, i = pg.mouse.get_pos()
-            j, i = j // 4, i // 4
+            j, i = j // PIXEL_SIZE, i // PIXEL_SIZE
             color = 1 if mouse[0] else 0
             board[i][j] = color
             for ci, cj in get_neighbours(j, i):
@@ -124,7 +125,9 @@ def main():
         # Save image
         if label != -1:
             save(label, board)
-            board = [[0 for _ in range(RESOLUTION)] for _ in range(RESOLUTION)]
+            board = [
+                [0 for _ in range(SCREEN_RESOLUTION)] for _ in range(SCREEN_RESOLUTION)
+            ]
             label = -1
 
         # Draw
