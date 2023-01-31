@@ -48,7 +48,7 @@ def build_npy(folder: str = "data"):
             X = np.append(X, im)
             Y = np.append(Y, label_to_one_hot(i))
 
-    # To csv
+    # To npy
     X_df = X.reshape(-1, 28 * 28).round(N_DECIMALS)
     Y_df = Y.reshape(-1, 10).round(N_DECIMALS)
 
@@ -58,6 +58,6 @@ def build_npy(folder: str = "data"):
 
 if __name__ == "__main__":
     # build_csv(folder="data")
-    # build_npy(folder="data")
+    build_npy(folder="data")
     X = np.load("data/X.npy")
     Y = np.load("data/Y.npy")

@@ -30,6 +30,9 @@ print(nn.forward(X[1]))
 print(nn.forward(X[2]))
 print(nn.forward(X[3]))
 
+# Save
+nn.save(model_name="xor")
+
 # Visualization
 fig = plt.figure("XOR Visualization", figsize=(12, 6))
 fig.suptitle("XOR Problem")
