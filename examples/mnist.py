@@ -2,6 +2,8 @@ import sys
 import os
 import numpy as np
 import random
+import cProfile
+
 
 current = os.path.dirname(os.path.realpath(__file__))
 parent = os.path.dirname(current)
@@ -29,19 +31,21 @@ X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2)
 
 
 layers = [
-    Dense(784, 16),
-    Tanh(16),
-    Dense(16, 10),
-    Tanh(10),
-    Dense(10, 10),
+    Dense(784, 64),
+    Tanh(64),
+    Dense(64, 64),
+    Tanh(64),
+    Dense(64, 10),
     Softmax(10),
     CrossEntropy(10),
 ]
 
-nn = NeuNet(layers, 0.1)
+nn = NeuNet(layers, 0.01)
 
 # Train
-errors = nn.train(X_train, Y_train, 100)
+errors = nn.train(X_train, Y_train, 10)
+
+# cProfile.run("nn.train(X_train, Y_train, 10)")
 
 # Test
 acc = nn.test(X_test, Y_test)
@@ -50,3 +54,12 @@ print(f"Accuracy: {acc}")
 # Plot
 plt.plot(errors)
 plt.show()
+
+for x, y in zip(X_test, Y_test):
+    y_ = np.argmax(nn.forward(x))
+    y = np.argmax(y)
+    print(f"{y_} =? {y}")
+    if y_ != y:
+        # Plot image
+        plt.imshow(x.reshape(28, 28), cmap="gray")
+        plt.show()

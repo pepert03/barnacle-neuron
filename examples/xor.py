@@ -13,17 +13,17 @@ Y = np.array([[0], [1], [1], [0]])
 
 # Network Arquitecture
 layers = [
-    Dense(2, 2),
-    Sigmoid(2),
-    Dense(2, 1),
-    Sigmoid(1),
-    BinaryCrossEntropy(1),
+    Dense(2, 3),
+    Tanh(3),
+    Dense(3, 1),
+    Tanh(1),
+    MSE(1),
 ]
 
-nn = NeuNet(layers, 1)
+nn = NeuNet(layers, 0.1)
 
 # Train
-errors = nn.train(X, Y, epochs=2000)
+errors = nn.train(X, Y, epochs=200)
 
 print(nn.forward(X[0]))
 print(nn.forward(X[1]))
