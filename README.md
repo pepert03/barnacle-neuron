@@ -18,6 +18,7 @@
     - [MNIST/LETTERS + Training + Result](#entrenamiento)
     - [Interface](#interfaz-grafica)
 
+    
 - [Getting Started](#getting-started)
     - [Installation](#installation)
     - [Usage](#usage)
@@ -34,25 +35,16 @@ To create the dataset, we've made a pygame interface that allows us to draw lett
 In order to achive translation, rotation and scaling invariance, we've used data augmentation techniques to expand the dataset.
 
 ### Neural Network
-We are going to use a modular approach to create the NeuralNetwork class. Abstractly, the neural network will be a list of Layer objects, which will perform two main operations:
+We are going to use a modular approach to create the NeuralNetwork class. In our implementation, every single operation in the network will be its own Layer. This will simplify the implementation as well as the mathematical derivation of the formulas. Each layer will be able to do two main operations:  
 
-1. **Forward Propagation**: Each layer will recieve an input and will calculate the output of the layer, feeding it to the next layer. The exception is the first layer, which will recieve the input from the user.
+1. **Forward Propagation**: Receives an input from the previous layer, performs the desired operation on it and returs the ouput.  
+The first layer will recieve the input from the dataset or from a user provided input.
 
-2. **Backward Propagation**: Each layer $L_{i}$ will recieve the imputed error of the following layer, $L_{i+1}$, that is, the error with respect to the input of $L_{i+1}$, which is the same as the error with respect to the output of the $L_{i}$. The exception is the last layer, which will recieve the imputed error from our loss function.<br>
-In this project, we will be using the Categorical Cross-Entropy Loss function, which is defined as follows:<br>  
-
-    $$E(\textbf{y},\hat{y}) = -\sum_i \textbf{y}_i \log (\hat{y_i})$$
-
-    , where $\textbf{y}$ is the real output distribution and $\hat{\textbf{y}}$ is the predicted output distribution. 
-    The Categorical Cross-entropy takes as input two discrete probability distributions, $\textbf{y}$ and $\hat{y}$, and outputs a single real-valued number representing the similarity of both probability distributions.
+2. **Backward Propagation**: Recieves the imputed error of the following layer. That is, the error with respect to its input.  
+The exception is the last layer, which will be a Loss Layer. It will calculate the imputed error using the loss function and the output of the network.
 
 ### Basic Layers
-The Layer class will consist of 3 main methods:
-- **__init__**: This method will initialize the layer, depending on the type on layer, it will initialize the weights, the activation function, the kernels, etc.
-- **forward**: This method will calculate the output of the layer given an input.
-- **backward**: This method will calculate the imputed error of the layer given the imputed error of the next layer. It will also update the parameters of the layer if it is a trainable layer.
-
-This layer will be the base class for the other layers. We will define 2 basic layers for this project: the Dense layer and the Activation layer.  
+The Layer class will be the base class for the other layers. We will define 3 type of layers for this project: Dense, Activation and Loss layers.
 
 Now we proceed to define the formulas needed in forward and backward propagation for each layer.  
 
@@ -66,8 +58,8 @@ Now we proceed to define the formulas needed in forward and backward propagation
 - $\bar{x}$: Input of the layer (vector)
 - $\bar{y}$: Output of the layer (vector)
 
-- $\bar{W}$: Weights of the layer (matrix)
-- $\bar{b}$: Bias of the layer (vector)
+- $\bar{W}$: Weights of the Dense layer (matrix)
+- $\bar{b}$: Bias of the Dense layer (vector)
 - $\bar{a}(\bar{x})$: Activation function of the layer (vector)
 
 - $n$: length of $\bar{x}$
@@ -75,13 +67,18 @@ Now we proceed to define the formulas needed in forward and backward propagation
 
 <br>
 
-We will take advantage of the modular approach of the neural network to define the formulas for each layer.
+We will take advantage of the modular approach of the neural network to define the formulas for each layer. 
+ 
+Using the chain rule, we will be able to derive the formulas for each layer in terms of the formulas of the previous layer.
 
 1. **Dense Layer**
 
     - **Forward Propagation**:
         $$y_i = w_{i1}x_1 + w_{i2}x_2 + \cdots + w_{in}x_n + b_i = \sum_{j}w_{ij}x_j + b_i$$
-        $$\bar{y} = \bar{W}\bar{x} + \bar{b}$$
+
+        ```math
+        \bar{y} = \bar{W}\bar{x} + \bar{b}
+        ```
 
     - **Backward Propagation**:   
         - **Parameter update**:
@@ -139,12 +136,12 @@ $$
         - **Tanh**: 
             $$a_i(\bar{x}) = \frac{e^{x_i}-e^{-x_i}}{e^{x_i}+e^{-x_i}}$$  
 
-            $$\frac{\partial{a_i(\bar{x})}}{\partial{x_j}} = \left\lbrace 1 - a_i^2(\bar{x}) \ \ \ if \ \  j==i \atop \ \ \ \ \ \ \ 0  \ \ \ \ \ \ \ \ \ \ \ \ otherwise  \right.$$
+            $$\frac{\partial{a_i(\bar{x})}}{\partial{x_j}} = \left\lbrace 1 - a_i^2(\bar{x}) \ \ \ if \ \  i==j \atop \ \ \ \ \ \ \ 0  \ \ \ \ \ \ \ \ \ \ \ \ otherwise  \right.$$
 
         - **Softmax**: 
             $$a_i(\bar{x}) = \frac{e^{x_i}}{\sum_{j}e^{x_j}}$$  
 
-            $$\frac{\partial{a_i(\bar{x})}}{\partial{x_j}} = \left\lbrace a_i(\bar{x})(1-a_i(\bar{x})) \ \ \ if \ \  j==i \atop \ \ \ -a_i(\bar{x})a_j(\bar{x})  \ \ \ \ \ \ otherwise  \right. = a_i(\bar{x})(1 \lbrace i==j \rbrace -a_j(\bar{x}))$$
+            $$\frac{\partial{a_i(\bar{x})}}{\partial{x_j}} = \left\lbrace a_i(\bar{x})(1-a_i(\bar{x})) \ \ \ if \ \  i==j \atop \ \ \ -a_i(\bar{x})a_j(\bar{x})  \ \ \ \ \ \ otherwise  \right. = a_i(\bar{x})(1 \lbrace i==j \rbrace -a_j(\bar{x}))$$
 
 
     - **Forward Propagation**:  

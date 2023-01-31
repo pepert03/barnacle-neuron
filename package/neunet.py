@@ -87,7 +87,6 @@ class Dense(TrainableLayer):
         return np.dot(self.weights, x) + self.biases
 
     def backward(self, derror, update=True):
-        print(self.weights.shape, derror.shape, self.last_x.shape)
         dedx = np.dot(self.weights.T, derror)
         if update:
             self.weights -= self.learning_rate * np.dot(derror, self.last_x.T)
@@ -152,9 +151,10 @@ class Softmax(NonTrainableLayer):
                 J[i].append(softmax_prime(i, j))
 
         J = np.array(J).reshape(self.input_size, self.input_size)
-        print("J:", J.shape)
-        print("error:", error.shape)
-        return np.dot(J.T, error)
+
+        print(J.round(2))
+        input()
+        return np.dot(J, error)
 
 
 class CrossEntropy(NonTrainableLayer):
@@ -168,10 +168,6 @@ class CrossEntropy(NonTrainableLayer):
         return -np.sum(y * np.log(x))
 
     def backward(self, y):
-        print("Error")
-        print(y.shape)
-        print(self.last_x.shape)
-        print((-y / self.last_x).shape)
         return -y / self.last_x
 
 
@@ -230,27 +226,29 @@ class NeuNet:
         for layer in reversed(self.layers[:-1]):
             derror = layer.backward(derror)
 
-    def untrain(self, y, alpha=0.1, epochs=1000):
-        print("WTF:", y.shape)
+    def untrain(self, y, alpha=0.1, epochs=1000, error_plot=True):
+        """Finds the input that maximizes the output of the last layer"""
+        # Random input
         input_size = self.layers[0].input_size
         inp = 2 * np.random.rand(input_size, 1) - 1
+
+        # Untrain
+        errors = []
         for _ in range(epochs):
-            self.forward_propagation(inp, y)
+            e = self.forward_propagation(inp, y)
             derror = self.layers[-1].backward(y)
-            for layer in reversed(self.layers):
-                print(layer.__class__.__name__)
+            for layer in reversed(self.layers[:-1]):
                 if layer.is_trainable:
                     derror = layer.backward(derror, update=False)
                 else:
                     derror = layer.backward(derror)
-            print(inp.shape, derror.shape)
             inp -= alpha * derror
+            errors.append(e)
 
-        # Display the image
-        print("\n" * 2)
-        print(inp)
-        plt.imshow(inp.reshape(28, 28), cmap="gray")
-        plt.show()
+        # Error plot
+        if error_plot:
+            plt.plot(errors)
+            plt.show()
 
         return inp
 
