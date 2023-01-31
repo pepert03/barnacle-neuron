@@ -7,6 +7,7 @@ current = os.path.dirname(os.path.realpath(__file__))
 parent = os.path.dirname(current)
 sys.path.append(parent)
 
+
 from package.neunet import *
 
 
@@ -29,19 +30,14 @@ X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2)
 
 
 layers = [
-    Dense(784, 16),
-    Tanh(16),
-    Dense(16, 10),
-    Tanh(10),
-    Dense(10, 10),
+    Dense(784, 10),
     Softmax(10),
     CrossEntropy(10),
 ]
 
 nn = NeuNet(layers, 0.1)
-
 # Train
-errors = nn.train(X_train, Y_train, 100)
+errors = nn.train(X_train, Y_train, 50)
 
 # Test
 acc = nn.test(X_test, Y_test)
@@ -50,3 +46,6 @@ print(f"Accuracy: {acc}")
 # Plot
 plt.plot(errors)
 plt.show()
+
+# Save
+nn.save(model_name="mnist")

@@ -85,7 +85,7 @@ def main():
     # Image label
     label = -1
 
-    # Initialize clock with 60 FPS
+    # Initialize clock with 120 FPS
     clock = pg.time.Clock()
     FPS = 120
 

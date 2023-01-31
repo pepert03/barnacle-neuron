@@ -1,9 +1,11 @@
+import json
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 
 
 class NeuNet:
-    def __init__(self, layers: list, learing_rate) -> None:
+    def __init__(self, layers: list=[], learing_rate: float=0.1) -> None:
         self.layers = layers
         self.learing_rate = learing_rate
 
@@ -36,9 +38,7 @@ class NeuNet:
             for x, y in zip(X, Y):
                 x = x.reshape(x.shape[0], 1)
                 y = y.reshape(y.shape[0], 1)
-                # print("Forward propagation...")
                 xs, e = self.forward_propagation(x, y)
-                # print("Backward propagation...")
                 self.backward_propagation(xs, y)
                 error += e
             print(epoch, ":", error / len(X), end="\r")
@@ -57,6 +57,37 @@ class NeuNet:
                 correct += 1
         return correct / len(X)
 
+    def save(self, model_name, folder="models"):
+        if not os.path.exists(folder):
+            os.makedirs(folder)
+        folder = os.path.join(folder, model_name)
+        if not os.path.exists(folder):
+            os.makedirs(folder)
+        for i, layer in enumerate(self.layers):
+            if layer.is_trainable:
+                np.save(os.path.join(folder, f"weights{i}.npy"), layer.weights)
+                np.save(os.path.join(folder, f"biases{i}.npy"), layer.biases)
+        info = json.dumps({
+            "layers": [layer.save_dict() for layer in self.layers],
+            "learing_rate": self.learing_rate
+        }, indent=4)
+        with open(os.path.join(folder, "info.json"), "w") as f:
+            f.write(info)
+
+    def load(self, model_name, folder="models"):
+        folder = os.path.join(folder, model_name)
+        with open(os.path.join(folder, "info.json"), "r") as f:
+            info = json.load(f)
+        self.layers = []
+        for i, layer in enumerate(info["layers"]):
+            layer_class = globals()[layer["name"]]
+            layer = layer_class(*layer["args"])
+            if layer.is_trainable:
+                layer.weights = np.load(os.path.join(folder, f"weights{i}.npy"))
+                layer.biases = np.load(os.path.join(folder, f"biases{i}.npy"))
+            self.layers.append(layer)
+        self.learing_rate = info["learing_rate"]
+
 
 class Layer:
     def __init__(self) -> None:
@@ -73,12 +104,18 @@ class TrainableLayer(Layer):
     def __init__(self) -> None:
         self.is_trainable = True
         super().__init__()
+    
+    def save_dict(self):
+        return {"name": self.__class__.__name__, "args": [self.input_size, self.output_size]}
 
 
 class NonTrainableLayer(Layer):
     def __init__(self) -> None:
         self.is_trainable = False
         super().__init__()
+
+    def save_dict(self):
+        return {"name": self.__class__.__name__, "args": [self.input_size]}
 
 
 class Dense(TrainableLayer):
@@ -190,3 +227,17 @@ class MSE(NonTrainableLayer):
 
     def backward(self, x, y):
         return 2 * (x - y) / self.input_size
+
+
+class Normalization(NonTrainableLayer):
+    def __init__(self, input_size: int) -> None:
+        self.input_size = input_size
+        self.a = lambda x: x / np.sum(x)
+        self.a_p = lambda x: (1 / np.sum(x)) - (x / np.sum(x) ** 2)
+        super().__init__()
+
+    def forward(self, x):
+        return self.a(x)
+
+    def backward(self, x, error):
+        return self.a_p(x) * error
