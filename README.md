@@ -74,6 +74,11 @@ Using the chain rule, we will be able to derive the formulas for each layer in t
 1. **Dense Layer**
 
     - **Forward Propagation**:
+
+        ```math
+        \sqrt{2}
+        ```
+
         ```math
         \begin{equation}
         y_i = 
