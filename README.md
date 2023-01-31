@@ -75,13 +75,17 @@ Using the chain rule, we will be able to derive the formulas for each layer in t
 
     - **Forward Propagation**:
         ```math
+        \begin{equation}
         y_i = 
         w_{i1}x_1 + w_{i2}x_2 + \cdots + w_{in}x_n + b_i = 
         \sum_{j}w_{ij}x_j + b_i
+        \end{equation}
         ```
 
         ```math
+        \begin{equation}
         \bar{y} = \bar{W}\bar{x} + \bar{b}
+        \end{equation}
         ```
         
 
