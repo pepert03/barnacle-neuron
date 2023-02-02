@@ -152,8 +152,6 @@ class Softmax(NonTrainableLayer):
 
         J = np.array(J).reshape(self.input_size, self.input_size)
 
-        print(J.round(2))
-        input()
         return np.dot(J, error)
 
 
