@@ -6,11 +6,11 @@ import matplotlib.pyplot as plt
 
 class Layer:
     def __init__(self) -> None:
-        # if not hasattr(self, "forward"):
-        #     self.forward = self.error
-        #     self.error = self.wrap_forward(self.error)
-        # self.forward = self.wrap_forward(self.forward)
-        # self.backward = self.wrap_backward(self.backward)
+        if not hasattr(self, "forward"):
+            self.forward = self.error
+            self.error = self.wrap_forward(self.error)
+        self.forward = self.wrap_forward(self.forward)
+        self.backward = self.wrap_backward(self.backward)
         pass
 
     # Add a decorator to wrap forward and backward methods
@@ -122,38 +122,54 @@ class Sigmoid(NonTrainableLayer):
         return self.last_a * (1 - self.last_a) * derror
 
 
+# class Softmax(NonTrainableLayer):
+#     def __init__(self, input_size: int) -> None:
+#         self.input_size = input_size
+#         self.last_x = None
+#         super().__init__()
+
+#     def forward(self, x):
+#         self.last_x = x
+#         return np.exp(x) / np.sum(np.exp(x))
+
+#     def backward(self, error):
+#         x = self.last_x
+#         norm = np.sum(np.exp(x))
+
+#         def softmax_prime(i, j):
+#             ai = np.exp(x[i]) / norm
+#             if i == j:
+#                 return ai * (1 - ai)
+#             else:
+#                 aj = np.exp(x[j]) / norm
+#                 return -ai * aj
+
+#         J = []
+#         for i in range(self.input_size):
+#             J.append([])
+#             for j in range(self.input_size):
+#                 J[i].append(softmax_prime(i, j))
+
+#         J = np.array(J).reshape(self.input_size, self.input_size)
+
+#         print(J.round(2))
+#         input()
+#         return np.dot(J, error)
+
+
 class Softmax(NonTrainableLayer):
     def __init__(self, input_size: int) -> None:
         self.input_size = input_size
-        self.last_x = None
+        self.last_a = None
         super().__init__()
 
     def forward(self, x):
-        self.last_x = x
-        return np.exp(x) / np.sum(np.exp(x))
+        self.last_a = np.exp(x) / np.sum(np.exp(x))
+        return self.last_a
 
     def backward(self, error):
-        x = self.last_x
-        norm = np.sum(np.exp(x))
-
-        def softmax_prime(i, j):
-            ai = np.exp(x[i]) / norm
-            if i == j:
-                return ai * (1 - ai)
-            else:
-                aj = np.exp(x[j]) / norm
-                return -ai * aj
-
-        J = []
-        for i in range(self.input_size):
-            J.append([])
-            for j in range(self.input_size):
-                J[i].append(softmax_prime(i, j))
-
-        J = np.array(J).reshape(self.input_size, self.input_size)
-
-        print(J.round(2))
-        input()
+        ai = self.last_a
+        J = np.diagflat(ai) - np.outer(ai, ai)
         return np.dot(J, error)
 
 

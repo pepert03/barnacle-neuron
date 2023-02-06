@@ -2,7 +2,7 @@
 [![made-with-pygame](https://img.shields.io/badge/Made%20with-Pygame-informational?style=flat-square)](https://www.pygame.org/news)
 
 
-<div style="text-align:left"><img src="meta/logo.jpg" width="100%"></div>
+<div style="text-align:left"><img src="assets/logo.jpg" width="100%"></div>
 
 
 # The Barnacle Neuron
@@ -82,12 +82,12 @@ Using the chain rule, we will be able to derive the formulas for each layer in t
     - **Backward Propagation**:   
         - **Parameter update**:
             For each weight $w_{ij}$, we have to calculate the partial derivative of the error with respect to that weight. Using the chain rule, we have:
-            $$\frac{\partial{E}}{\partial{w_{ij}}} = \frac{\partial{E}}{\partial{\bar{y_i}}} \frac{\partial{\bar{y_i}}}{\partial{w_{ij}}} = \frac{\partial{E}}{\partial{\bar{y_i}}}\bar{x_j}$$
+            $$\frac{\partial{E}}{\partial{w_{ij}}} = \frac{\partial{E}}{\partial{y_i}} \frac{\partial{y_i}}{\partial{w_{ij}}} = \frac{\partial{E}}{\partial{y_i}}\cdot{x_j}$$
             And for each bias $b_i$:
-            $$\frac{\partial{E}}{\partial{b_i}} = \frac{\partial{E}}{\partial{\bar{y_i}}}\frac{\partial{\bar{y_i}}}{\partial{b_i}} = \frac{\partial{E}}{\partial{\bar{y_i}}}\cdot{1}$$
+            $$\frac{\partial{E}}{\partial{b_i}} = \frac{\partial{E}}{\partial{y_i}}\frac{\partial{y_i}}{\partial{b_i}} = \frac{\partial{E}}{\partial{y_i}}\cdot{1}$$
             Extrapolating to matrix notation:
-            $$\frac{\partial{E}}{\partial{\bar{W}}} = \frac{\partial{E}}{\partial{\bar{y}}}\bar{x}^T$$
-            $$\frac{\partial{E}}{\partial{\bar{b}}} = \frac{\partial{E}}{\partial{\bar{y}}}$$
+            $$\boxed{\frac{\partial{E}}{\partial{\bar{W}}} = \frac{\partial{E}}{\partial{\bar{y}}}\bar{x}^T}$$
+            $$\boxed{\frac{\partial{E}}{\partial{\bar{b}}} = \frac{\partial{E}}{\partial{\bar{y}}}}$$
             Then, we update the weights and the biases using the gradient descent algorithm:
             $$\bar{W} = \bar{W} - \alpha\frac{\partial{E}}{\partial{\bar{W}}}$$
             $$\bar{b} = \bar{b} - \alpha\frac{\partial{E}}{\partial{\bar{b}}}$$
@@ -129,6 +129,8 @@ w_{1n}&w_{2n}&\cdots&w_{mn}
 \end{bmatrix} = W^t\frac{\partial{E}}{\partial{\bar{y}}}
 $$
 
+$$\boxed{\frac{\partial{E}}{\partial{\bar{x}}} = \bar{W}^T\frac{\partial{E}}{\partial{\bar{y}}}}$$
+
 2. **Activation Layer**
     - **Activation Functions**: Here we'll use two activation functions:  
 
@@ -145,7 +147,7 @@ $$
 
     - **Forward Propagation**:  
         $$y_i = a_i(\bar{x})$$
-        $$\bar{y} = \bar{a}(\bar{x})$$
+        $$\boxed{\bar{y} = \bar{a}(\bar{x})}$$
 
     - **Backward Propagation**:   
         - **Imputed Error**:
@@ -187,30 +189,36 @@ $$
 J_a(\bar{x})^T\frac{\partial{E}}{\partial{\bar{y}}}
 $$
 
+$$
+\boxed{\frac{\partial{E}}{\partial{\bar{x}}} = J_a(\bar{x})^T\frac{\partial{E}}{\partial{\bar{y}}}}
+$$
+
 3. **Loss Layer**  
-    Using the [error](#Neural-Network) defined above, we can calculate the error of the network.
-    - **Backward Propagation**:   
-        - **Imputed Error**: 
-            $$\frac{\partial{E(\textbf{y},\bar{x})}}{\partial{x_i}} = - \sum_j \textbf{y}_j \frac{\partial{\log{x_j}}}{\partial{x_i}} = - \frac{\textbf{y}_i}{x_i}$$
-            , where $\textbf{y}$ is the real output of the network and $\bar{x}$ is the output of the last layer of the network, i.e. the predicted output.  
+    - **Loss Functions**:  
+        - **Cross Entropy**:  
+            - **Fordward Propagation**:  
+                $$E(\bar{x},\textbf{y}) = - \sum_i \textbf{y}_i \log{x_i}$$
+                $$\boxed{\bar{E}(\bar{x},\textbf{y}) = - \textbf{y}^T \log{\bar{x}}}$$
+            - **Backward Propagation**:  
+                - **Imputed Error**:  
+                    $$\frac{\partial{E(\bar{x},\textbf{y})}}{\partial{x_i}} = - \sum_j \textbf{y}_j \frac{\partial{\log{x_j}}}{\partial{x_i}} = - \frac{\textbf{y}_i}{x_i}$$
+                    $$\boxed{\frac{\partial{E(\bar{x},\textbf{y})}}{\partial{\bar{x}}} = - \frac{\textbf{y}}{\bar{x}}}$$
+        - **Mean Squared Error**:  
+            - **Fordward Propagation**:  
+                $$E(\bar{x},\textbf{y}) = \frac{1}{2}\sum_i (\textbf{y}_i - x_i)^2$$
+                $$\boxed{\bar{E}(\bar{x},\textbf{y}) = \frac{1}{2}(\textbf{y} - \bar{x})^T(\textbf{y} - \bar{x})}$$
+            - **Backward Propagation**:  
+                - **Imputed Error**:  
+                    $$\frac{\partial{E(\bar{x},\textbf{y})}}{\partial{x_i}} = \sum_j \textbf{y}_j \frac{\partial{(\textbf{y}_j - x_j)^2}}{\partial{x_i}} = \textbf{y}_i - x_i$$
+                    $$\boxed{\frac{\partial{E(\bar{x},\textbf{y})}}{\partial{\bar{x}}} = \textbf{y} - \bar{x}}$$ 
     
     We can check that this works, calculating what would be the $\frac{\partial{E}}{\partial{\bar{z}}}$, where $z$ is the input of the last activation layer, in our case, a softmax layer. For simplicity, lets call $\bar s (\bar z)$ the softmax function.
     $$\frac{\partial{E}}{\partial{z_i}} = \sum_j \frac{\partial{E}}{\partial{s_j}}\frac{\partial{s_j}}{\partial{z_i}} = \sum_j \left(-\frac{\textbf{y}_j}{s_j}\right)(s_j(1\lbrace i==j\rbrace -s_i))$$
-    $$= \sum_j -\textbf{y}_j(1 \lbrace i==j \rbrace -s_i) = -\textbf{y}_i + \sum_j \textbf{y}_j s_i = -\textbf{y}_i + \textbf{y}_i s_i = s_i - \textbf{y}_i$$  
+    $$= \sum_j -\textbf{y}_j(1 \lbrace i==j \rbrace -s_i) = -\textbf{y}_i + \sum_j \textbf{y}_j s_i = -\textbf{y}_i + s_i \sum_i \textbf{y}_i = s_i - \textbf{y}_i$$  
 
     Vectorizing this, we get:  
 
-$$\frac{\partial{E}}{\partial{\bar{z}}} = 
-\begin{bmatrix}\frac{\partial{E}}{\partial{z_1}} \\ 
-\frac{\partial{E}}{\partial{z_2}} \\ 
-\vdots \\ 
-\frac{\partial{E}}{\partial{z_n}}
-\end{bmatrix} = \begin{bmatrix}s_1 - \textbf{y}_1 \\ 
-s_2 - \textbf{y}_2 \\ 
-\vdots \\ 
-s_n - \textbf{y}_n
-\end{bmatrix} = \bar{s} - \textbf{y}
-$$
+    $$\boxed{\frac{\partial{E}}{\partial{\bar{z}}} = \bar{s} - \textbf{y}}$$
 
 ## Getting Started
 Use the following instructions to get a copy of the project up and running on your local machine.
