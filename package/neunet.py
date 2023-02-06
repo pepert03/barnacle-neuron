@@ -13,7 +13,7 @@ class Layer:
         def wrapper(*args, **kwargs):
             print(f"\n{self.__class__.__name__} Layer doing Forward Propagation...\n")
             print(f"\tArgs:")
-            for i, arg in enumerate(args):
+            for _, arg in enumerate(args):
                 print("-" * 20)
                 print(arg)
             print("-" * 20)
@@ -32,7 +32,7 @@ class Layer:
         def wrapper(*args, **kwargs):
             print(f"\n{self.__class__.__name__} Layer doing Backward Propagation...\n")
             print(f"\tArgs:")
-            for i, arg in enumerate(args):
+            for _, arg in enumerate(args):
                 print("-" * 20)
                 print(arg)
             print("-" * 20)
