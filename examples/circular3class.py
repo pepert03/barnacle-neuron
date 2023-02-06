@@ -20,6 +20,8 @@ for x, y in X:
         Y = np.append(Y, [0, 0, 1])
 Y = Y.reshape(400, 3)
 
+# activate_debug_mode()
+
 # Neural Network Structure
 layers = [
     Dense(2, 10),

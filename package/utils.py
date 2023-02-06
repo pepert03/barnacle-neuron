@@ -26,6 +26,10 @@ def normalize_center_scale(img, res, pad=4):
     5. Resize image to res x res
     """
 
+    # Check if image is blank
+    if np.isclose(img.max(), 0):
+        return np.zeros((res, res))
+
     # Normalize
     img = img - img.min()
     img = img / img.max()

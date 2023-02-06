@@ -5,15 +5,10 @@ import matplotlib.pyplot as plt
 
 
 class Layer:
-    def __init__(self) -> None:
-        if not hasattr(self, "forward"):
-            self.forward = self.error
-            self.error = self.wrap_forward(self.error)
-        self.forward = self.wrap_forward(self.forward)
-        self.backward = self.wrap_backward(self.backward)
+    def __init__(self):
         pass
 
-    # Add a decorator to wrap forward and backward methods
+    # Decorator to wrap forward method. Debugging purposes
     def wrap_forward(self, func):
         def wrapper(*args, **kwargs):
             print(f"\n{self.__class__.__name__} Layer doing Forward Propagation...\n")
@@ -32,6 +27,7 @@ class Layer:
 
         return wrapper
 
+    # Decorator to wrap backward methods. Debugging purposes
     def wrap_backward(self, func):
         def wrapper(*args, **kwargs):
             print(f"\n{self.__class__.__name__} Layer doing Backward Propagation...\n")
@@ -54,6 +50,7 @@ class Layer:
 class TrainableLayer(Layer):
     def __init__(self) -> None:
         self.is_trainable = True
+        self.is_loss_layer = False
         super().__init__()
 
     def save_dict(self):
@@ -70,6 +67,12 @@ class NonTrainableLayer(Layer):
 
     def save_dict(self):
         return {"name": self.__class__.__name__, "args": [self.input_size]}
+
+
+class LossLayer(NonTrainableLayer):
+    def __init__(self) -> None:
+        self.is_loss_layer = True
+        super().__init__()
 
 
 class Dense(TrainableLayer):
@@ -122,41 +125,6 @@ class Sigmoid(NonTrainableLayer):
         return self.last_a * (1 - self.last_a) * derror
 
 
-# class Softmax(NonTrainableLayer):
-#     def __init__(self, input_size: int) -> None:
-#         self.input_size = input_size
-#         self.last_x = None
-#         super().__init__()
-
-#     def forward(self, x):
-#         self.last_x = x
-#         return np.exp(x) / np.sum(np.exp(x))
-
-#     def backward(self, error):
-#         x = self.last_x
-#         norm = np.sum(np.exp(x))
-
-#         def softmax_prime(i, j):
-#             ai = np.exp(x[i]) / norm
-#             if i == j:
-#                 return ai * (1 - ai)
-#             else:
-#                 aj = np.exp(x[j]) / norm
-#                 return -ai * aj
-
-#         J = []
-#         for i in range(self.input_size):
-#             J.append([])
-#             for j in range(self.input_size):
-#                 J[i].append(softmax_prime(i, j))
-
-#         J = np.array(J).reshape(self.input_size, self.input_size)
-
-#         print(J.round(2))
-#         input()
-#         return np.dot(J, error)
-
-
 class Softmax(NonTrainableLayer):
     def __init__(self, input_size: int) -> None:
         self.input_size = input_size
@@ -173,7 +141,7 @@ class Softmax(NonTrainableLayer):
         return np.dot(J, error)
 
 
-class CrossEntropy(NonTrainableLayer):
+class CrossEntropy(LossLayer):
     def __init__(self, input_size: int) -> None:
         self.input_size = input_size
         self.last_x = None
@@ -187,7 +155,7 @@ class CrossEntropy(NonTrainableLayer):
         return -y / self.last_x
 
 
-class BinaryCrossEntropy(NonTrainableLayer):
+class BinaryCrossEntropy(LossLayer):
     def __init__(self, input_size: int) -> None:
         self.input_size = input_size
         self.last_x = None
@@ -202,7 +170,7 @@ class BinaryCrossEntropy(NonTrainableLayer):
         return (x - y) / (x * (1 - x) * self.input_size)
 
 
-class MSE(NonTrainableLayer):
+class MSE(LossLayer):
     def __init__(self, input_size: int) -> None:
         self.input_size = input_size
         self.last_x = None
@@ -219,31 +187,48 @@ class MSE(NonTrainableLayer):
 
 class NeuNet:
     def __init__(self, layers: list = [], learing_rate=0.1, verbose=True) -> None:
+        # Network layers
         self.layers = layers
+        # Set learning rate for all trainable layers
         self.learing_rate = learing_rate
-        for layer in self.layers:
+        for i, layer in enumerate(self.layers):
             if layer.is_trainable:
                 layer.learning_rate = learing_rate
+            layer.index = i
+        # Split layers into non-loss and loss layers
+        assert self.layers[-1].is_loss_layer, "Last layer must be a loss layer"
+        self.layers, self.loss_layer = self.layers[:-1], self.layers[-1]
         self.verbose = verbose
 
-    def forward(self, x):
+    def predict(self, x):
+        """
+        Makes a forward pass through the network given an input vector x and
+        returns the output vector of the last layer.
+        """
         x = x.reshape(x.shape[0], 1)
-        for layer in self.layers[:-1]:
+        for layer in self.layers:
             x = layer.forward(x)
         return x
 
     def forward_propagation(self, x, y):
-        for layer in self.layers[:-1]:
+        """Makes a forward pass through the network and returns the error"""
+        for layer in self.layers:
             x = layer.forward(x)
-        return self.layers[-1].error(x, y)
+        return self.loss_layer.error(x, y)
 
     def backward_propagation(self, y):
-        derror = self.layers[-1].backward(y)
-        for layer in reversed(self.layers[:-1]):
+        """
+        Makes a backward pass through the network and returns the imputed error.
+        Every trainable layer updates its weights and biases.
+        """
+        derror = self.loss_layer.backward(y)
+        for layer in reversed(self.layers):
             derror = layer.backward(derror)
+        return derror
 
     def untrain(self, y, alpha=0.1, epochs=1000, error_plot=True):
-        """Finds the input that maximizes the output of the last layer"""
+        """Finds the input that maximizes the output of the last layer."""
+
         # Random input
         input_size = self.layers[0].input_size
         inp = 2 * np.random.rand(input_size, 1) - 1
@@ -252,8 +237,8 @@ class NeuNet:
         errors = []
         for _ in range(epochs):
             e = self.forward_propagation(inp, y)
-            derror = self.layers[-1].backward(y)
-            for layer in reversed(self.layers[:-1]):
+            derror = self.loss_layer.backward(y)
+            for layer in reversed(self.layers):
                 if layer.is_trainable:
                     derror = layer.backward(derror, update=False)
                 else:
@@ -268,24 +253,43 @@ class NeuNet:
 
         return inp
 
-    def train(self, X, Y, epochs):
+    def fit(self, X, Y, epochs):
+        """
+        Trains the network on the given data X and Y for the given number of
+        epochs.
+
+        Returns a list of errors for each epoch.
+        """
+        # Train
         errors = []
         for epoch in range(epochs):
             error = 0
+            # For each training example
             for x, y in zip(X, Y):
                 x = x.reshape(x.shape[0], 1)
                 y = y.reshape(y.shape[0], 1)
                 e = self.forward_propagation(x, y)
                 self.backward_propagation(y)
                 error += e
+            error = error / len(X)
+            errors.append(error)
             if self.verbose:
-                print(epoch, ":", error / len(X), end="\r")
-            errors.append(error / len(X))
+                print(epoch, ":", error, end="\r")
         if self.verbose:
-            print(epoch, ":", error / len(X))
+            print(epoch, ":", error)
         return errors
 
     def test(self, X, Y):
+        """
+        TODO: Implement different metrics
+        -
+        -
+        -
+        -
+        -
+        -
+        -
+        """
         correct = 0
         for x, y in zip(X, Y):
             x = x.reshape(x.shape[0], 1)
@@ -329,3 +333,30 @@ class NeuNet:
                 layer.biases = np.load(os.path.join(folder, f"biases{i}.npy"))
             self.layers.append(layer)
         self.learing_rate = info["learing_rate"]
+
+
+def debug_layer_init(self) -> None:
+    if not hasattr(self, "forward"):
+        self.forward = self.error
+        self.error = self.wrap_forward(self.error)
+    self.forward = self.wrap_forward(self.forward)
+    self.backward = self.wrap_backward(self.backward)
+
+
+def normal_layer_init(_) -> None:
+    pass
+
+
+def activate_debug_mode():
+    """
+    Sets the debug mode for all layers.
+    This will print the shapes of the inputs and outputs of each layer, in forward and backward pass.
+    """
+    Layer.__init__ = debug_layer_init
+
+
+def deactivate_debug_mode():
+    """
+    Sets the normal mode for all layers.
+    """
+    Layer.__init__ = normal_layer_init
