@@ -186,7 +186,7 @@ class MSE(LossLayer):
 
 
 class NeuNet:
-    def __init__(self, layers: list = [], learing_rate=0.1, verbose=True) -> None:
+    def __init__(self, layers, learing_rate=0.1, verbose=True) -> None:
         # Network layers
         self.layers = layers
         # Set learning rate for all trainable layers
@@ -320,19 +320,21 @@ class NeuNet:
         with open(os.path.join(folder, "info.json"), "w") as f:
             f.write(info)
 
-    def load(self, model_name, folder="models"):
+    @classmethod
+    def load(cls, model_name, folder="models"):
         folder = os.path.join(folder, model_name)
         with open(os.path.join(folder, "info.json"), "r") as f:
             info = json.load(f)
-        self.layers = []
+        layers = []
         for i, layer in enumerate(info["layers"]):
             layer_class = globals()[layer["name"]]
             layer = layer_class(*layer["args"])
             if layer.is_trainable:
                 layer.weights = np.load(os.path.join(folder, f"weights{i}.npy"))
                 layer.biases = np.load(os.path.join(folder, f"biases{i}.npy"))
-            self.layers.append(layer)
-        self.learing_rate = info["learing_rate"]
+            layers.append(layer)
+        learing_rate = info["learing_rate"]
+        return cls(layers, learing_rate)
 
 
 def debug_layer_init(self) -> None:

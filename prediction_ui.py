@@ -91,8 +91,7 @@ def main():
     FPS = 120
 
     # Initialize neural network
-    mnist = nn.NeuNet()
-    mnist.load(model_name="mnist")
+    mnist = nn.NeuNet.load(model_name="mnist")
     y_pred = np.ones(10)
 
     run = True
@@ -105,7 +104,7 @@ def main():
             if event.type == pg.KEYUP:
                 if event.key == pg.K_RETURN:
                     x = to_npy(board)
-                    y_pred = mnist.forward(x).round(N_DECIMALS)
+                    y_pred = mnist.predict(x).round(N_DECIMALS)
                 if event.key == pg.K_BACKSPACE:
                     y = np.ones(10)
                     board = [

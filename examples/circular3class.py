@@ -34,7 +34,7 @@ layers = [
 nn = NeuNet(layers, 0.1)
 
 # Train
-errors = nn.train(X, Y, epochs=250)
+errors = nn.fit(X, Y, epochs=250)
 
 
 # Visualization
@@ -59,7 +59,7 @@ Xg, Yg = np.meshgrid(xs, ys)
 Z = np.zeros((100, 100))
 for i in range(100):
     for j in range(100):
-        Z[i, j] = np.argmax(nn.forward(np.array([Xg[i, j], Yg[i, j]])))
+        Z[i, j] = np.argmax(nn.predict(np.array([Xg[i, j], Yg[i, j]])))
 
 ax.imshow(Z, extent=[0, 1, 0, 1], origin="lower", alpha=0.2)
 

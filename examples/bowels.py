@@ -10,8 +10,7 @@ from package.neunet import *
 # numpy warnings to errors
 np.seterr(all="raise")
 
-nn = NeuNet()
-nn.load("mnist")
+nn = NeuNet.load("mnist")
 
 fig = plt.figure("NeuralNetwork Bowels", figsize=(12, 5))
 
@@ -25,6 +24,6 @@ for i in range(10):
     plt.axis("off")
     # Feed input to the network
     print("Feeding:", i)
-    print(nn.forward(inp))
+    print(nn.predict(inp))
 
 plt.show()
