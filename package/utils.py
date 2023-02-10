@@ -62,6 +62,14 @@ def accuracy(Y_true, Y_pred):
     """
     Calculate the accuracy of a classification model
     """
+    if len(Y_pred.shape) == 1:
+        Y_pred_ = np.zeros((Y_pred.shape[0], 2))
+        Y_pred_[:, 0] = Y_pred
+        Y_pred_[:, 1] = 1 - Y_pred
+        Y_true = np.zeros((Y_true.shape[0], 2))
+        Y_true[:, 0] = Y_true
+        Y_true[:, 1] = 1 - Y_true
+    
     Y_pred = np.argmax(Y_pred, axis=1)
     Y_true = np.argmax(Y_true, axis=1)
     return np.mean(Y_true == Y_pred)
@@ -71,24 +79,53 @@ def precision(Y_true, Y_pred):
     """
     Calculate the precision of a classification model
     """
+    if len(Y_pred.shape) == 1:
+        Y_pred_ = np.zeros((Y_pred.shape[0], 2))
+        Y_pred_[:, 0] = Y_pred
+        Y_pred_[:, 1] = 1 - Y_pred
+        Y_true = np.zeros((Y_true.shape[0], 2))
+        Y_true[:, 0] = Y_true
+        Y_true[:, 1] = 1 - Y_true
+    n_classes = Y_pred.shape[1]
     Y_pred = np.argmax(Y_pred, axis=1)
     Y_true = np.argmax(Y_true, axis=1)
-    return np.sum(Y_true[Y_true == Y_pred] == 1) / np.sum(Y_pred == 1)
+    mean_precision = 0
+    for label in range(n_classes):
+        mean_precision += np.sum(Y_true[Y_true == Y_pred] == label) / np.sum(Y_pred == label)
+    return mean_precision / n_classes
 
 
 def recall(Y_true, Y_pred):
     """
     Calculate the recall of a classification model
     """
+    if len(Y_pred.shape) == 1:
+        Y_pred_ = np.zeros((Y_pred.shape[0], 2))
+        Y_pred_[:, 0] = Y_pred
+        Y_pred_[:, 1] = 1 - Y_pred
+        Y_true = np.zeros((Y_true.shape[0], 2))
+        Y_true[:, 0] = Y_true
+        Y_true[:, 1] = 1 - Y_true
+    n_classes = Y_pred.shape[1]
     Y_pred = np.argmax(Y_pred, axis=1)
     Y_true = np.argmax(Y_true, axis=1)
-    return np.sum(Y_true[Y_true == Y_pred] == 1) / np.sum(Y_true == 1)
+    mean_recall = 0
+    for label in range(n_classes):
+        mean_recall += np.sum(Y_true[Y_true == Y_pred] == label) / np.sum(Y_true == label)
+    return mean_recall / n_classes
 
 
 def f1_score(Y_true, Y_pred):
     """
     Calculate the f1_score of a classification model
     """
+    if len(Y_pred.shape) == 1:
+        Y_pred_ = np.zeros((Y_pred.shape[0], 2))
+        Y_pred_[:, 0] = Y_pred
+        Y_pred_[:, 1] = 1 - Y_pred
+        Y_true = np.zeros((Y_true.shape[0], 2))
+        Y_true[:, 0] = Y_true
+        Y_true[:, 1] = 1 - Y_true
     Y_pred = np.argmax(Y_pred, axis=1)
     Y_true = np.argmax(Y_true, axis=1)
     p = precision(Y_true, Y_pred)
