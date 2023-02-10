@@ -222,7 +222,7 @@ class NeuNet:
         """Makes a forward pass through the network and returns the error"""
         for layer in self.layers:
             x = layer.forward(x)
-        return self.loss_layer.error(x, y)
+        return x, self.loss_layer.error(x, y)
 
     def backward_propagation(self, y):
         """
@@ -267,7 +267,6 @@ class NeuNet:
         epochs.
 
         Returns a list of errors for each epoch.
-
         """
         # Train the network
         errors = []
@@ -277,7 +276,7 @@ class NeuNet:
             for x, y in zip(X, Y):
                 x = x.reshape(x.shape[0], 1)
                 y = y.reshape(y.shape[0], 1)
-                e = self.forward_propagation(x, y)
+                y_pred, e = self.forward_propagation(x, y)
                 self.backward_propagation(y)
                 error += e
             error = error / len(X)
