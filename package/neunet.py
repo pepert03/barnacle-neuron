@@ -2,6 +2,13 @@ import json
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
+
+current = os.path.dirname(os.path.realpath(__file__))
+parent = os.path.dirname(current)
+sys.path.append(parent)
+
+from package import utils
 
 
 class Layer:
@@ -46,6 +53,13 @@ class Layer:
 
         return wrapper
 
+    def save_dict(self):
+        return {"name": self.__class__.__name__, "args": []}
+
+    @classmethod
+    def load_dict(cls, d):
+        return cls(*d["args"])
+
 
 class TrainableLayer(Layer):
     def __init__(self) -> None:
@@ -59,6 +73,10 @@ class TrainableLayer(Layer):
             "args": [self.input_size, self.output_size],
         }
 
+    @classmethod
+    def load_dict(cls, d):
+        return cls(*d["args"])
+
 
 class NonTrainableLayer(Layer):
     def __init__(self) -> None:
@@ -67,6 +85,10 @@ class NonTrainableLayer(Layer):
 
     def save_dict(self):
         return {"name": self.__class__.__name__, "args": [self.input_size]}
+
+    @classmethod
+    def load_dict(cls, d):
+        return cls(*d["args"])
 
 
 class LossLayer(NonTrainableLayer):
@@ -95,6 +117,37 @@ class Dense(TrainableLayer):
             self.weights -= self.learning_rate * np.dot(derror, self.last_x.T)
             self.biases -= self.learning_rate * derror
         return dedx
+
+    def save_dict(self):
+        """Save weights and biases to file and return a dictionary with the paths to the files"""
+        weights_path = os.path.join(
+            self.save_dir, f"{__class__.__name__}{self.layer_id}_weights.npy"
+        )
+        biases_path = os.path.join(
+            self.save_dir, f"{__class__.__name__}{self.layer_id}_biases.npy"
+        )
+        np.save(weights_path, self.weights)
+        np.save(biases_path, self.biases)
+        return (
+            super()
+            .save_dict()
+            .update(
+                {
+                    "weights_path": weights_path,
+                    "biases_path": biases_path,
+                }
+            )
+        )
+
+    @classmethod
+    def load_dict(cls, d):
+        """Load weights and biases from files and return a new Dense layer"""
+        weights = np.load(d["weights_path"])
+        biases = np.load(d["biases_path"])
+        lay = cls(*d["args"])
+        lay.weights = weights
+        lay.biases = biases
+        return lay
 
 
 class Tanh(NonTrainableLayer):
@@ -189,6 +242,8 @@ class NeuNet:
     def __init__(self, layers: list[Layer] = []) -> None:
         # Network layers
         self.layers = layers
+        # Compiled
+        self.compiled = False
 
     def compile(self, learning_rate: float = 0.1, metrics: list = []):
         """
@@ -207,6 +262,9 @@ class NeuNet:
 
         # Metrics
         self.metrics = metrics
+
+        # Compiled
+        self.compiled = True
 
     def predict(self, x):
         """
@@ -268,72 +326,89 @@ class NeuNet:
 
         Returns a list of errors for each epoch.
         """
+
+        assert self.compiled, "Network not compiled"
+
         # Train the network
         errors = []
         for epoch in range(epochs):
             error = 0
+            # Shuffle the data to avoid overfitting
+            idx = np.random.permutation(len(X))
+            # Store Y_pred for each training example
+            Y_pred = np.zeros(Y.shape)
             # For each training example
-            for x, y in zip(X, Y):
+            for i, (x, y) in enumerate(zip(X[idx], Y[idx])):
                 x = x.reshape(x.shape[0], 1)
                 y = y.reshape(y.shape[0], 1)
                 y_pred, e = self.forward_propagation(x, y)
                 self.backward_propagation(y)
+                Y_pred[i, :] = y_pred
                 error += e
             error = error / len(X)
             errors.append(error)
+            metrics = self.calculate_metrics(Y, Y_pred)
             if verbose:
-                print(epoch, ":", error, end="\r")
+                print(epoch, ":", error, metrics, end="\r")
         if verbose:
-            print(epoch, ":", error)
+            print(epoch, ":", error, metrics)
         return errors
 
-    def test(self, X, Y):
+    def calculate_metrics(self, Y, Y_pred):
         """
-        TODO: Implement different metrics
-        -
-        -
-        -
-        -
-        -
-        -
-        -
+        Calculates the metrics for the given Y and Y_pred
         """
-        correct = 0
-        for x, y in zip(X, Y):
+        map_metric = {
+            "accuracy": utils.accuracy,
+            "precision": utils.precision,
+            "recall": utils.recall,
+            "f1": utils.f1,
+        }
+        metrics = {}
+        for metric_name in self.metrics:
+            metric = map_metric[metric_name]
+            metrics[metric_name] = metric(Y, Y_pred)
+        return metrics
+
+    def test(self, X_test, Y_test):
+        """
+        Tests the network on the given data X_test and Y_test using the
+        metrics specified in the compile method.
+        """
+        Y_pred = np.zeros(Y_test.shape)
+        for i, (x, y) in enumerate(zip(X_test, Y_test)):
             x = x.reshape(x.shape[0], 1)
             y = y.reshape(y.shape[0], 1)
-            y_true = np.argmax(y)
-            y_pred = np.argmax(self.forward(x))
-            if y_true == y_pred:
-                correct += 1
-        return correct / len(X)
+            y_pred, _ = self.forward_propagation(x, y)
+            Y_pred[i, :] = y_pred
+        return self.calculate_metrics(Y_test, Y_pred)
 
     def save(self, model_name, folder="models"):
         """
         Saves the model to the given folder with the given name.
         """
+
+        # Create folders if they don't exist
         if not os.path.exists(folder):
             os.makedirs(folder)
 
-        folder = os.path.join(folder, model_name)
+        model_path = os.path.join(folder, model_name)
 
-        if not os.path.exists(folder):
-            os.makedirs(folder)
+        if not os.path.exists(model_path):
+            os.makedirs(model_path)
 
-        for i, layer in enumerate(self.layers):
-            if layer.is_trainable:
-                np.save(os.path.join(folder, f"weights{i}.npy"), layer.weights)
-                np.save(os.path.join(folder, f"biases{i}.npy"), layer.biases)
-
+        # Save each layer. If the layer is trainable, save its weights.
         info = json.dumps(
             {
                 "layers": [layer.save_dict() for layer in self.layers],
                 "learing_rate": self.learing_rate,
+                "metrics": self.metrics,
+                "compiled": self.compiled,
             },
             indent=4,
         )
 
-        with open(os.path.join(folder, "info.json"), "w") as f:
+        with open(os.path.join(model_path, "info.json"), "w") as f:
             f.write(info)
 
     @classmethod
@@ -342,15 +417,15 @@ class NeuNet:
         with open(os.path.join(folder, "info.json"), "r") as f:
             info = json.load(f)
         layers = []
-        for i, layer in enumerate(info["layers"]):
-            layer_class = globals()[layer["name"]]
-            layer = layer_class(*layer["args"])
-            if layer.is_trainable:
-                layer.weights = np.load(os.path.join(folder, f"weights{i}.npy"))
-                layer.biases = np.load(os.path.join(folder, f"biases{i}.npy"))
+        for layer_info in info["layers"]:
+            class_name = layer_info["name"]
+            layer_class = globals()[class_name]
+            layer = layer_class.load_dict(layer_info)
             layers.append(layer)
-        learing_rate = info["learing_rate"]
-        return cls(layers, learing_rate)
+        model = cls(layers)
+        model.compiled = info["compiled"]
+        model.compile(info["learing_rate"], info["metrics"])
+        return model
 
 
 def debug_layer_init(self) -> None:

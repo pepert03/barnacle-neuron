@@ -23,9 +23,13 @@ for _ in range(250):
         Tanh(1),
         MSE(1),
     ]
-    nn = NeuNet(layers, 0.1, verbose=False)
+    nn = NeuNet(layers)
+
+    # Compile
+    nn.compile(learning_rate=0.1, metrics=["accuracy","recall","precision"])
+
     # Train
-    errors = nn.train(X, Y, epochs=1000)
+    errors = nn.fit(X, Y, epochs=1000)
 
     # Check if the network is working
     all_correct = True
