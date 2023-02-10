@@ -186,19 +186,27 @@ class MSE(LossLayer):
 
 
 class NeuNet:
-    def __init__(self, layers: list = [], learing_rate=0.1, verbose=True) -> None:
+    def __init__(self, layers: list[Layer] = []) -> None:
         # Network layers
         self.layers = layers
-        # Set learning rate for all trainable layers
-        self.learing_rate = learing_rate
+
+    def compile(self, learning_rate: float = 0.1, metrics: list = []):
+        """
+        Initializes the network by setting the learning rate and metrics to use
+        when training and testing the network.
+        """
+        # Set learning rate
+        self.learing_rate = learning_rate
         for i, layer in enumerate(self.layers):
-            if layer.is_trainable:
-                layer.learning_rate = learing_rate
             layer.index = i
-        # Split layers into non-loss and loss layers
-        assert self.layers[-1].is_loss_layer, "Last layer must be a loss layer"
+            if layer.is_trainable:
+                layer.learning_rate = learning_rate
+
+        # Get loss layer
         self.layers, self.loss_layer = self.layers[:-1], self.layers[-1]
-        self.verbose = verbose
+
+        # Metrics
+        self.metrics = metrics
 
     def predict(self, x):
         """
@@ -226,7 +234,7 @@ class NeuNet:
             derror = layer.backward(derror)
         return derror
 
-    def untrain(self, y, alpha=0.1, epochs=1000, error_plot=True):
+    def untrain(self, y, learning_rate=0.1, epochs=1000, error_plot=True):
         """Finds the input that maximizes the output of the last layer."""
 
         # Random input
@@ -243,7 +251,7 @@ class NeuNet:
                     derror = layer.backward(derror, update=False)
                 else:
                     derror = layer.backward(derror)
-            inp -= alpha * derror
+            inp -= learning_rate * derror
             errors.append(e)
 
         # Error plot
@@ -253,14 +261,15 @@ class NeuNet:
 
         return inp
 
-    def fit(self, X, Y, epochs):
+    def fit(self, X, Y, epochs=1, verbose=False):
         """
         Trains the network on the given data X and Y for the given number of
         epochs.
 
         Returns a list of errors for each epoch.
+
         """
-        # Train
+        # Train the network
         errors = []
         for epoch in range(epochs):
             error = 0
@@ -273,9 +282,9 @@ class NeuNet:
                 error += e
             error = error / len(X)
             errors.append(error)
-            if self.verbose:
+            if verbose:
                 print(epoch, ":", error, end="\r")
-        if self.verbose:
+        if verbose:
             print(epoch, ":", error)
         return errors
 
@@ -301,15 +310,22 @@ class NeuNet:
         return correct / len(X)
 
     def save(self, model_name, folder="models"):
+        """
+        Saves the model to the given folder with the given name.
+        """
         if not os.path.exists(folder):
             os.makedirs(folder)
+
         folder = os.path.join(folder, model_name)
+
         if not os.path.exists(folder):
             os.makedirs(folder)
+
         for i, layer in enumerate(self.layers):
             if layer.is_trainable:
                 np.save(os.path.join(folder, f"weights{i}.npy"), layer.weights)
                 np.save(os.path.join(folder, f"biases{i}.npy"), layer.biases)
+
         info = json.dumps(
             {
                 "layers": [layer.save_dict() for layer in self.layers],
@@ -317,22 +333,25 @@ class NeuNet:
             },
             indent=4,
         )
+
         with open(os.path.join(folder, "info.json"), "w") as f:
             f.write(info)
 
-    def load(self, model_name, folder="models"):
+    @classmethod
+    def load(cls, model_name, folder="models"):
         folder = os.path.join(folder, model_name)
         with open(os.path.join(folder, "info.json"), "r") as f:
             info = json.load(f)
-        self.layers = []
+        layers = []
         for i, layer in enumerate(info["layers"]):
             layer_class = globals()[layer["name"]]
             layer = layer_class(*layer["args"])
             if layer.is_trainable:
                 layer.weights = np.load(os.path.join(folder, f"weights{i}.npy"))
                 layer.biases = np.load(os.path.join(folder, f"biases{i}.npy"))
-            self.layers.append(layer)
-        self.learing_rate = info["learing_rate"]
+            layers.append(layer)
+        learing_rate = info["learing_rate"]
+        return cls(layers, learing_rate)
 
 
 def debug_layer_init(self) -> None:
