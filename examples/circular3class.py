@@ -31,11 +31,14 @@ layers = [
     CrossEntropy(3),
 ]
 
-nn = NeuNet(layers, 0.1)
+# Create Neural Network
+nn = NeuNet(layers)
+
+# Compile
+nn.compile(learning_rate=0.1, metrics=["accuracy", "recall", "precision"])
 
 # Train
 errors = nn.fit(X, Y, epochs=250)
-
 
 # Visualization
 fig = plt.figure("Circular Visualization", figsize=(12, 6))

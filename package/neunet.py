@@ -343,7 +343,7 @@ class NeuNet:
                 y = y.reshape(y.shape[0], 1)
                 y_pred, e = self.forward_propagation(x, y)
                 self.backward_propagation(y)
-                Y_pred[i, :] = y_pred
+                Y_pred[i] = y_pred.reshape(y_pred.shape[0])
                 error += e
             error = error / len(X)
             errors.append(error)
@@ -362,7 +362,7 @@ class NeuNet:
             "accuracy": utils.accuracy,
             "precision": utils.precision,
             "recall": utils.recall,
-            "f1": utils.f1,
+            "f1_score": utils.f1_score,
         }
         metrics = {}
         for metric_name in self.metrics:
@@ -453,4 +453,3 @@ def deactivate_debug_mode():
     Sets the normal mode for all layers.
     """
     Layer.__init__ = normal_layer_init
-

@@ -23,10 +23,12 @@ for _ in range(250):
         Tanh(1),
         MSE(1),
     ]
+
+    # Create Neural Network
     nn = NeuNet(layers)
 
     # Compile
-    nn.compile(learning_rate=0.1, metrics=["accuracy","recall","precision"])
+    nn.compile(learning_rate=0.1, metrics=["accuracy", "recall", "precision"])
 
     # Train
     errors = nn.fit(X, Y, epochs=1000)
@@ -34,7 +36,7 @@ for _ in range(250):
     # Check if the network is working
     all_correct = True
     for i in range(4):
-        y_ = nn.forward(X[i])
+        y_ = nn.predict(X[i])
         if y_ > 0.5:
             if Y[i] < 0.5:
                 all_correct = False
