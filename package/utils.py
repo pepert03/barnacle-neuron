@@ -56,3 +56,41 @@ def normalize_center_scale(img, res, pad=4):
     img_final = cv2.resize(img_crop, (res, res), interpolation=cv2.INTER_AREA)
 
     return img_final
+
+
+def accuracy(Y_true, Y_pred):
+    """
+    Calculate the accuracy of a classification model
+    """
+    Y_pred = np.argmax(Y_pred, axis=1)
+    Y_true = np.argmax(Y_true, axis=1)
+    return np.mean(Y_true == Y_pred)
+
+
+def precision(Y_true, Y_pred):
+    """
+    Calculate the precision of a classification model
+    """
+    Y_pred = np.argmax(Y_pred, axis=1)
+    Y_true = np.argmax(Y_true, axis=1)
+    return np.sum(Y_true[Y_true == Y_pred] == 1) / np.sum(Y_pred == 1)
+
+
+def recall(Y_true, Y_pred):
+    """
+    Calculate the recall of a classification model
+    """
+    Y_pred = np.argmax(Y_pred, axis=1)
+    Y_true = np.argmax(Y_true, axis=1)
+    return np.sum(Y_true[Y_true == Y_pred] == 1) / np.sum(Y_true == 1)
+
+
+def f1_score(Y_true, Y_pred):
+    """
+    Calculate the f1_score of a classification model
+    """
+    Y_pred = np.argmax(Y_pred, axis=1)
+    Y_true = np.argmax(Y_true, axis=1)
+    p = precision(Y_true, Y_pred)
+    r = recall(Y_true, Y_pred)
+    return 2 * p * r / (p + r)

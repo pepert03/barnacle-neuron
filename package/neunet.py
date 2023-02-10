@@ -378,3 +378,4 @@ def deactivate_debug_mode():
     Sets the normal mode for all layers.
     """
     Layer.__init__ = normal_layer_init
+
