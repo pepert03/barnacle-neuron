@@ -1,65 +1,55 @@
 import sys
 import os
-import numpy as np
-import random
-import cProfile
-
 
 current = os.path.dirname(os.path.realpath(__file__))
 parent = os.path.dirname(current)
 sys.path.append(parent)
 
 
+import numpy as np
+from sklearn.model_selection import train_test_split
 from package.neunet import *
 
 
-def train_test_split(X, Y, test_size=0.2):
-    X_train, X_test, Y_train, Y_test = [], [], [], []
-    for i in range(len(X)):
-        if random.random() < test_size:
-            X_test.append(X[i])
-            Y_test.append(Y[i])
-        else:
-            X_train.append(X[i])
-            Y_train.append(Y[i])
-    return np.array(X_train), np.array(X_test), np.array(Y_train), np.array(Y_test)
-
-
+# Load data
 X = np.load("data/X.npy")
 Y = np.load("data/Y.npy")
 
-X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2)
+# Split data
+X_train, X_test, Y_train, Y_test = train_test_split(
+    X, Y, test_size=0.2, random_state=42
+)
 
+# Create layers
+layers = [
+    Dense(784, 10),
+    Softmax(10),
+    CrossEntropy(10),
+]
 
-# layers = [
-#     Dense(784, 10),
-#     Softmax(10),
-#     CrossEntropy(10),
-# ]
+# Create model
+nn = NeuNet(layers)
 
-# nn = NeuNet(layers, 0.01)
+# Compile
+nn.compile(learning_rate=0.01, metrics=["accuracy", "recall", "precision"])
+
 # Train
-# errors = nn.train(X_train, Y_train, 10)
-nn = NeuNet()
-nn.load("mnist")
-# cProfile.run("nn.train(X_train, Y_train, 10)")
+errors = nn.fit(X_train, Y_train, 30, verbose=True)
 
 # Test
-acc = nn.test(X_test, Y_test)
-print(f"Accuracy: {acc}")
+nn.evaluate(X_test, Y_test)
 
-# Plot
-# plt.plot(errors)
-# plt.show()
+# Save model
+nn.save(model_path="models/mnist")
 
-# Save
-# nn.save(model_name="mnist")
+# Visualizations
+fig = plt.figure("MNIST Visualization", figsize=(12, 6))
 
-for x, y in zip(X_test, Y_test):
-    y_ = np.argmax(nn.forward(x))
-    y = np.argmax(y)
-    print(f"{y_} =? {y}")
-    if y_ != y:
-        # Plot image
-        plt.imshow(x.reshape(28, 28), cmap="gray")
-        plt.show()
+fig.suptitle("Visualization of MNIST Clasification")
+
+# Error plot
+ax = plt.subplot(1, 1, 1)
+ax.set_title("Error")
+ax.plot(errors)
+
+plt.show()

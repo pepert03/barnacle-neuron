@@ -1,0 +1,31 @@
+{
+    "layers": [
+        {
+            "class_name": "Dense",
+            "init_args": [
+                784,
+                10
+            ],
+            "weights_path": "models/mnist\\Dense0_weights.npy",
+            "biases_path": "models/mnist\\Dense0_biases.npy"
+        },
+        {
+            "class_name": "Softmax",
+            "init_args": [
+                10
+            ]
+        }
+    ],
+    "loss_layer": {
+        "class_name": "CrossEntropy",
+        "init_args": [
+            10
+        ]
+    },
+    "learing_rate": 0.01,
+    "metrics": [
+        "accuracy",
+        "recall",
+        "precision"
+    ]
+}

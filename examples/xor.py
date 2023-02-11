@@ -20,18 +20,24 @@ layers = [
     MSE(1),
 ]
 
-nn = NeuNet(layers, 0.1)
+# Create Neural Network
+nn = NeuNet(layers)
+
+# Compile
+nn.compile(learning_rate=0.1, metrics=["accuracy", "recall", "precision"])
 
 # Train
-errors = nn.train(X, Y, epochs=200)
+errors = nn.fit(X, Y, epochs=500)
 
-print(nn.forward(X[0]))
-print(nn.forward(X[1]))
-print(nn.forward(X[2]))
-print(nn.forward(X[3]))
+# Test
+print(nn.predict(X[0]))
+print(nn.predict(X[1]))
+print(nn.predict(X[2]))
+print(nn.predict(X[3]))
+nn.evaluate(X, Y)
 
 # Save
-nn.save(model_name="xor")
+nn.save(model_path="models/xor")
 
 # Visualization
 fig = plt.figure("XOR Visualization", figsize=(12, 6))
@@ -58,7 +64,7 @@ Xg, Yg = np.meshgrid(xs, ys)
 Z = np.zeros((100, 100))
 for i in range(100):
     for j in range(100):
-        Z[i, j] = nn.forward(np.array([Xg[i, j], Yg[i, j]])) > 0.5
+        Z[i, j] = nn.predict(np.array([Xg[i, j], Yg[i, j]]))
 
 ax.imshow(Z, extent=[0, 1, 0, 1], origin="lower", alpha=0.2)
 

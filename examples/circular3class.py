@@ -1,5 +1,6 @@
 import sys
 import os
+from sklearn.model_selection import train_test_split
 
 current = os.path.dirname(os.path.realpath(__file__))
 parent = os.path.dirname(current)
@@ -20,6 +21,8 @@ for x, y in X:
         Y = np.append(Y, [0, 0, 1])
 Y = Y.reshape(400, 3)
 
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2)
+
 # activate_debug_mode()
 
 # Neural Network Structure
@@ -38,9 +41,13 @@ nn = NeuNet(layers)
 nn.compile(learning_rate=0.1, metrics=["accuracy", "recall", "precision"])
 
 # Train
-errors = nn.fit(X, Y, epochs=250)
+errors = nn.fit(X_train, Y_train, epochs=250, verbose=True)
 
-# Visualization
+# Test
+nn.evaluate(X_test, Y_test)
+
+
+# Visualizations
 fig = plt.figure("Circular Visualization", figsize=(12, 6))
 
 fig.suptitle("Visualization of Circular Clasification")

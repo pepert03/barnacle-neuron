@@ -90,7 +90,7 @@ def main():
     FPS = 120
 
     # Initialize neural network
-    mnist = nn.NeuNet.load(model_name="mnist")
+    mnist = nn.NeuNet.load(model_path="models/mnist")
     y_pred = np.ones(10)
 
     run = True

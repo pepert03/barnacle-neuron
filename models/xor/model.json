@@ -1,0 +1,46 @@
+{
+    "layers": [
+        {
+            "class_name": "Dense",
+            "init_args": [
+                2,
+                3
+            ],
+            "weights_path": "models/xor\\Dense0_weights.npy",
+            "biases_path": "models/xor\\Dense0_biases.npy"
+        },
+        {
+            "class_name": "Tanh",
+            "init_args": [
+                3
+            ]
+        },
+        {
+            "class_name": "Dense",
+            "init_args": [
+                3,
+                1
+            ],
+            "weights_path": "models/xor\\Dense2_weights.npy",
+            "biases_path": "models/xor\\Dense2_biases.npy"
+        },
+        {
+            "class_name": "Tanh",
+            "init_args": [
+                1
+            ]
+        }
+    ],
+    "loss_layer": {
+        "class_name": "MSE",
+        "init_args": [
+            1
+        ]
+    },
+    "learing_rate": 0.1,
+    "metrics": [
+        "accuracy",
+        "recall",
+        "precision"
+    ]
+}

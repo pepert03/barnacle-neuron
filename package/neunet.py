@@ -15,8 +15,9 @@ class Layer:
     def __init__(self):
         pass
 
-    # Decorator to wrap forward method. Debugging purposes
     def wrap_forward(self, func):
+        """Decorator to wrap forward methods. Debugging purposes"""
+
         def wrapper(*args, **kwargs):
             print(f"\n{self.__class__.__name__} Layer doing Forward Propagation...\n")
             print(f"\tArgs:")
@@ -34,8 +35,9 @@ class Layer:
 
         return wrapper
 
-    # Decorator to wrap backward methods. Debugging purposes
     def wrap_backward(self, func):
+        """Decorator to wrap backward methods. Debugging purposes"""
+
         def wrapper(*args, **kwargs):
             print(f"\n{self.__class__.__name__} Layer doing Backward Propagation...\n")
             print(f"\tArgs:")
@@ -53,48 +55,53 @@ class Layer:
 
         return wrapper
 
-    def save_dict(self):
-        return {"name": self.__class__.__name__, "args": []}
+    def save_dict(self, **_):
+        """Saves itself and returns a dictionary with the information needed to recreate it"""
+        return {"class_name": self.__class__.__name__, "init_args": []}
 
     @classmethod
     def load_dict(cls, d):
-        return cls(*d["args"])
+        """Loads itself from the dictionary returned by save_dict"""
+        return cls(*d["init_args"])
 
 
 class TrainableLayer(Layer):
     def __init__(self) -> None:
+        super().__init__()
         self.is_trainable = True
-        self.is_loss_layer = False
-        super().__init__()
-
-    def save_dict(self):
-        return {
-            "name": self.__class__.__name__,
-            "args": [self.input_size, self.output_size],
-        }
-
-    @classmethod
-    def load_dict(cls, d):
-        return cls(*d["args"])
+        self.is_loss = False
 
 
-class NonTrainableLayer(Layer):
+class ActivationLayer(Layer):
     def __init__(self) -> None:
+        super().__init__()
         self.is_trainable = False
-        super().__init__()
+        self.is_loss = False
 
-    def save_dict(self):
-        return {"name": self.__class__.__name__, "args": [self.input_size]}
+    def save_dict(self, **_):
+        """Saves itself and returns a dictionary with the information needed to recreate it"""
+        return {"class_name": self.__class__.__name__, "init_args": [self.input_size]}
 
     @classmethod
     def load_dict(cls, d):
-        return cls(*d["args"])
+        """Loads itself from the dictionary returned by save_dict"""
+        return cls(*d["init_args"])
 
 
-class LossLayer(NonTrainableLayer):
+class LossLayer(Layer):
     def __init__(self) -> None:
-        self.is_loss_layer = True
         super().__init__()
+        self.is_trainable = False
+        self.is_loss = True
+
+    def save_dict(self, **_):
+        """Saves itself and returns a dictionary with the information needed to recreate it"""
+        return {"class_name": self.__class__.__name__, "init_args": [self.input_size]}
+
+    @classmethod
+    def load_dict(cls, d):
+        """Loads itself from the dictionary returned by save_dict"""
+        return cls(*d["init_args"])
 
 
 class Dense(TrainableLayer):
@@ -118,39 +125,44 @@ class Dense(TrainableLayer):
             self.biases -= self.learning_rate * derror
         return dedx
 
-    def save_dict(self):
-        """Save weights and biases to file and return a dictionary with the paths to the files"""
+    def save_dict(self, **kwargs):
+        """Save weights and biases to file and return a dictionary with the paths to the files
+        and all the other information needed to recreate the layer
+        """
+        # Get the model path from the kwargs
+        model_path = kwargs["model_path"]
+        assert model_path is not None, "model_path must be specified"
+        assert os.path.isdir(model_path), "model_path must be a valid directory"
+
+        # Save weights and biases to files
         weights_path = os.path.join(
-            self.save_dir, f"{__class__.__name__}{self.layer_id}_weights.npy"
+            model_path, f"{__class__.__name__}{self.id}_weights.npy"
         )
         biases_path = os.path.join(
-            self.save_dir, f"{__class__.__name__}{self.layer_id}_biases.npy"
+            model_path, f"{__class__.__name__}{self.id}_biases.npy"
         )
         np.save(weights_path, self.weights)
         np.save(biases_path, self.biases)
-        return (
-            super()
-            .save_dict()
-            .update(
-                {
-                    "weights_path": weights_path,
-                    "biases_path": biases_path,
-                }
-            )
-        )
+
+        return {
+            "class_name": self.__class__.__name__,
+            "init_args": [self.input_size, self.output_size],
+            "weights_path": weights_path,
+            "biases_path": biases_path,
+        }
 
     @classmethod
     def load_dict(cls, d):
-        """Load weights and biases from files and return a new Dense layer"""
+        """Loads itself from the dictionary returned by save_dict. Also loads the weights and biases."""
+        layer = cls(*d["init_args"])
         weights = np.load(d["weights_path"])
         biases = np.load(d["biases_path"])
-        lay = cls(*d["args"])
-        lay.weights = weights
-        lay.biases = biases
-        return lay
+        layer.weights = weights
+        layer.biases = biases
+        return layer
 
 
-class Tanh(NonTrainableLayer):
+class Tanh(ActivationLayer):
     def __init__(self, input_size: int) -> None:
         self.input_size = input_size
         self.last_a = None
@@ -164,7 +176,7 @@ class Tanh(NonTrainableLayer):
         return (1 - self.last_a**2) * derror
 
 
-class Sigmoid(NonTrainableLayer):
+class Sigmoid(ActivationLayer):
     def __init__(self, input_size: int) -> None:
         self.input_size = input_size
         self.last_a = None
@@ -178,7 +190,7 @@ class Sigmoid(NonTrainableLayer):
         return self.last_a * (1 - self.last_a) * derror
 
 
-class Softmax(NonTrainableLayer):
+class Softmax(ActivationLayer):
     def __init__(self, input_size: int) -> None:
         self.input_size = input_size
         self.last_a = None
@@ -239,9 +251,23 @@ class MSE(LossLayer):
 
 
 class NeuNet:
-    def __init__(self, layers: list[Layer] = []) -> None:
+    def __init__(self, layers: list[Layer] = [], loss_layer: Layer = None) -> None:
+        # Check layers
+        assert len(layers) > (
+            loss_layer is None
+        ), "Network must have at least one layer"
+        assert layers[-1].is_loss | isinstance(
+            loss_layer, LossLayer
+        ), "You must specify a loss layer"
+
         # Network layers
-        self.layers = layers
+        if loss_layer is not None:
+            self.layers = layers
+            self.loss_layer = loss_layer
+        else:
+            self.layers, self.loss_layer = layers[:-1], layers[-1]
+            assert len(self.layers) > 0, "Network must have at least one layer"
+
         # Compiled
         self.compiled = False
 
@@ -253,12 +279,9 @@ class NeuNet:
         # Set learning rate
         self.learing_rate = learning_rate
         for i, layer in enumerate(self.layers):
-            layer.index = i
+            layer.id = i
             if layer.is_trainable:
                 layer.learning_rate = learning_rate
-
-        # Get loss layer
-        self.layers, self.loss_layer = self.layers[:-1], self.layers[-1]
 
         # Metrics
         self.metrics = metrics
@@ -292,6 +315,79 @@ class NeuNet:
             derror = layer.backward(derror)
         return derror
 
+    def fit(self, X, Y, epochs=1, verbose=True):
+        """
+        Trains the network on the given data X and Y for the given number of
+        epochs.
+
+        Returns a list of errors for each epoch.
+        """
+
+        assert self.compiled, "Network not compiled"
+
+        # Train the network
+        errors = []
+        for epoch in range(epochs):
+            error = 0
+            # Shuffle the data to avoid overfitting
+            idx = np.random.permutation(len(X))
+            # Store Y_pred for each training example
+            Y_pred = np.zeros(Y.shape)
+            # For each training example
+            for i, (x, y) in enumerate(zip(X[idx], Y[idx])):
+                x = x.reshape(x.shape[0], 1)
+                y = y.reshape(y.shape[0], 1)
+                y_pred, e = self.forward_propagation(x, y)
+                self.backward_propagation(y)
+                Y_pred[idx[i]] = y_pred.reshape(y_pred.shape[0])
+                error += e
+            error = error / len(X)
+            errors.append(error)
+            metrics = self.calculate_metrics(Y, Y_pred)
+            if verbose:
+                # print(epoch, ":", error, metrics, end="\r")
+                print(
+                    f"{epoch}: Loss -> {error:.4f}, {', '.join(f'{k}: {m:.4f}' for k, m in metrics.items())}",
+                    end="\r" if epoch < epochs - 1 else "\n",
+                )
+        return errors
+
+    def calculate_metrics(self, Y, Y_pred):
+        """
+        Calculates the metrics for the given Y and Y_pred
+        """
+        map_metric = {
+            "accuracy": utils.accuracy,
+            "precision": utils.precision,
+            "recall": utils.recall,
+            "f1_score": utils.f1_score,
+        }
+        metrics = {}
+        for metric_name in self.metrics:
+            metric = map_metric[metric_name]
+            metrics[metric_name] = metric(Y, Y_pred)
+        return metrics
+
+    def evaluate(self, X_test, Y_test, vectorize=True):
+        """
+        Tests the network on the given data X_test and Y_test using the
+        metrics specified in the compile method.
+        """
+        error = 0
+        Y_pred = np.zeros(Y_test.shape)
+        for i, (x, y) in enumerate(zip(X_test, Y_test)):
+            x = x.reshape(x.shape[0], 1)
+            y = y.reshape(y.shape[0], 1)
+            y_pred, e = self.forward_propagation(x, y)
+            Y_pred[i] = y_pred.reshape(y_pred.shape[0])
+            error += e
+        error = error / len(X_test)
+        metrics = self.calculate_metrics(Y_test, Y_pred)
+        print(
+            f"Loss -> {error:.4f}, {', '.join(f'{k}: {m:.4f}' for k, m in metrics.items())}"
+        )
+        return error, metrics
+
     def untrain(self, y, learning_rate=0.1, epochs=1000, error_plot=True):
         """Finds the input that maximizes the output of the last layer."""
 
@@ -319,112 +415,64 @@ class NeuNet:
 
         return inp
 
-    def fit(self, X, Y, epochs=1, verbose=False):
+    def save(self, model_path: str):
         """
-        Trains the network on the given data X and Y for the given number of
-        epochs.
-
-        Returns a list of errors for each epoch.
+        Saves the model to the given folder with the given name.
+        Structure of the folder:
+            - model.json
+            - Weights0.npy
+            - Weights1.npy
+            - ...
         """
 
         assert self.compiled, "Network not compiled"
 
-        # Train the network
-        errors = []
-        for epoch in range(epochs):
-            error = 0
-            # Shuffle the data to avoid overfitting
-            idx = np.random.permutation(len(X))
-            # Store Y_pred for each training example
-            Y_pred = np.zeros(Y.shape)
-            # For each training example
-            for i, (x, y) in enumerate(zip(X[idx], Y[idx])):
-                x = x.reshape(x.shape[0], 1)
-                y = y.reshape(y.shape[0], 1)
-                y_pred, e = self.forward_propagation(x, y)
-                self.backward_propagation(y)
-                Y_pred[i] = y_pred.reshape(y_pred.shape[0])
-                error += e
-            error = error / len(X)
-            errors.append(error)
-            metrics = self.calculate_metrics(Y, Y_pred)
-            if verbose:
-                print(epoch, ":", error, metrics, end="\r")
-        if verbose:
-            print(epoch, ":", error, metrics)
-        return errors
-
-    def calculate_metrics(self, Y, Y_pred):
-        """
-        Calculates the metrics for the given Y and Y_pred
-        """
-        map_metric = {
-            "accuracy": utils.accuracy,
-            "precision": utils.precision,
-            "recall": utils.recall,
-            "f1_score": utils.f1_score,
-        }
-        metrics = {}
-        for metric_name in self.metrics:
-            metric = map_metric[metric_name]
-            metrics[metric_name] = metric(Y, Y_pred)
-        return metrics
-
-    def test(self, X_test, Y_test):
-        """
-        Tests the network on the given data X_test and Y_test using the
-        metrics specified in the compile method.
-        """
-        Y_pred = np.zeros(Y_test.shape)
-        for i, (x, y) in enumerate(zip(X_test, Y_test)):
-            x = x.reshape(x.shape[0], 1)
-            y = y.reshape(y.shape[0], 1)
-            y_pred, _ = self.forward_propagation(x, y)
-            Y_pred[i, :] = y_pred
-        return self.calculate_metrics(Y_test, Y_pred)
-
-    def save(self, model_name, folder="models"):
-        """
-        Saves the model to the given folder with the given name.
-        """
-
-        # Create folders if they don't exist
-        if not os.path.exists(folder):
-            os.makedirs(folder)
-
-        model_path = os.path.join(folder, model_name)
-
+        # Create folder if they don't exist
         if not os.path.exists(model_path):
             os.makedirs(model_path)
 
-        # Save each layer. If the layer is trainable, save its weights.
-        info = json.dumps(
+        # Model info
+        layers_dicts = [layer.save_dict(model_path=model_path) for layer in self.layers]
+        model_dict = json.dumps(
             {
-                "layers": [layer.save_dict() for layer in self.layers],
+                "layers": layers_dicts,
+                "loss_layer": self.loss_layer.save_dict(),
                 "learing_rate": self.learing_rate,
                 "metrics": self.metrics,
-                "compiled": self.compiled,
             },
             indent=4,
         )
 
-        with open(os.path.join(model_path, "info.json"), "w") as f:
-            f.write(info)
+        # Save model
+        with open(os.path.join(model_path, "model.json"), "w") as f:
+            f.write(model_dict)
 
     @classmethod
-    def load(cls, model_name, folder="models"):
-        folder = os.path.join(folder, model_name)
-        with open(os.path.join(folder, "info.json"), "r") as f:
+    def load(cls, model_path: str):
+        """
+        Loads the model with the given name from the given folder.
+        """
+
+        # Load info dict
+        with open(os.path.join(model_path, "model.json"), "r") as f:
             info = json.load(f)
+
+        # Create layers
         layers = []
-        for layer_info in info["layers"]:
-            class_name = layer_info["name"]
+        for layer_dict in info["layers"]:
+            class_name = layer_dict["class_name"]
             layer_class = globals()[class_name]
-            layer = layer_class.load_dict(layer_info)
+            layer = layer_class.load_dict(layer_dict)
             layers.append(layer)
-        model = cls(layers)
-        model.compiled = info["compiled"]
+
+        # Create loss layer
+        loss_layer_name = info["loss_layer"]["class_name"]
+        loss_layer = globals()[loss_layer_name].load_dict(info["loss_layer"])
+
+        # Create model
+        model = cls(layers, loss_layer)
         model.compile(info["learing_rate"], info["metrics"])
+
         return model
 
 
@@ -436,7 +484,7 @@ def debug_layer_init(self) -> None:
     self.backward = self.wrap_backward(self.backward)
 
 
-def normal_layer_init(_) -> None:
+def normal_layer_init(self) -> None:
     pass
 
 

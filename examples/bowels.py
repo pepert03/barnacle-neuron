@@ -10,14 +10,15 @@ from package.neunet import *
 # numpy warnings to errors
 np.seterr(all="raise")
 
-nn = NeuNet.load("mnist")
+# Create network
+nn = NeuNet.load("models/mnist")
 
 fig = plt.figure("NeuralNetwork Bowels", figsize=(12, 5))
 
 for i in range(10):
     y = np.zeros((10, 1))
     y[i] = 1
-    inp = nn.untrain(y, 0.05, 1000, error_plot=False)
+    inp = nn.untrain(y, 0.05, 5000, error_plot=False)
     plt.subplot(2, 5, i + 1)
     plt.imshow(inp.reshape(28, 28), cmap="gray")
     plt.title(f"Number: {i}")
