@@ -13,9 +13,11 @@ np.seterr(all="raise")
 # Create network
 nn = NeuNet.load("models/mnist")
 
+# Create figure
 fig = plt.figure("NeuralNetwork Bowels", figsize=(12, 5))
 
 for i in range(10):
+    # Train the input to maximize the output
     y = np.zeros((10, 1))
     y[i] = 1
     inp = nn.untrain(y, 0.05, 5000, error_plot=False)

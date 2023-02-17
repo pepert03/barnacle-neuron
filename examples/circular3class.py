@@ -46,6 +46,9 @@ errors = nn.fit(X_train, Y_train, epochs=250, verbose=True)
 # Test
 nn.evaluate(X_test, Y_test)
 
+# Save model
+print(nn.layers)
+nn.save(model_path="models/circular3class")
 
 # Visualizations
 fig = plt.figure("Circular Visualization", figsize=(12, 6))

@@ -77,6 +77,7 @@ class ActivationLayer(Layer):
         super().__init__()
         self.is_trainable = False
         self.is_loss = False
+        self.output_size = self.input_size
 
     def save_dict(self, **_):
         """Saves itself and returns a dictionary with the information needed to recreate it"""

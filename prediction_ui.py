@@ -29,10 +29,10 @@ def draw_board(board: list[list[int]], screen: pg.Surface, y_pred: list[int]):
     # Draw board
     for y in range(SCREEN_RESOLUTION):
         for x in range(SCREEN_RESOLUTION):
-            g = int(255 * board[y][x])
+            c = int(255 * board[y][x])
             pg.draw.rect(
                 screen,
-                (g, g, g),
+                (c, c, c),
                 (x * PIXEL_SIZE, y * PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE),
             )
 
