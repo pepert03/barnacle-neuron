@@ -17,10 +17,10 @@ for _ in range(250):
     # With 2,3,1 we get a 98% convergence rate
     # With 2,2,1 we get a 80% convergence rate
     layers = [
-        Dense(2, 3),
-        Tanh(3),
-        Dense(3, 1),
-        Tanh(1),
+        Dense(2, 10),
+        ReLU(10),
+        Dense(10, 1),
+        Sigmoid(1),
         MSE(1),
     ]
 
@@ -31,7 +31,7 @@ for _ in range(250):
     nn.compile(learning_rate=0.1, metrics=["accuracy", "recall", "precision"])
 
     # Train
-    errors = nn.fit(X, Y, epochs=1000, verbose=False)
+    errors = nn.fit(X, Y, epochs=250, verbose=False)
 
     # Check if the network is working
     all_correct = True

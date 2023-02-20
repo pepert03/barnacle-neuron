@@ -208,6 +208,23 @@ class Softmax(ActivationLayer):
         return np.dot(J, error)
 
 
+class ReLU(ActivationLayer):
+    def __init__(self, input_size: int, a = 0) -> None:
+        self.input_size = input_size
+        self.a = a
+        self.last_da = None
+        self.ones = np.ones((self.input_size, 1))
+        super().__init__()
+
+    def forward(self, x):
+        self.last_da = self.ones.copy()
+        self.last_da[x<0] = self.a 
+        return self.last_da * x
+
+    def backward(self, error):
+        return self.last_da * error
+
+
 class CrossEntropy(LossLayer):
     def __init__(self, input_size: int) -> None:
         self.input_size = input_size

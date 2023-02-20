@@ -16,7 +16,7 @@ layers = [
     Dense(2, 3),
     Tanh(3),
     Dense(3, 1),
-    Tanh(1),
+    Sigmoid(1),
     MSE(1),
 ]
 
