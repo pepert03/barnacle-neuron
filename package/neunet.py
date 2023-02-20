@@ -346,9 +346,11 @@ class NeuNet:
             errors.append(error)
             metrics = self.calculate_metrics(Y, Y_pred)
             if verbose:
-                # print(epoch, ":", error, metrics, end="\r")
+                n = epoch + 1
                 print(
-                    f"{epoch}: Loss -> {error:.4f}, {', '.join(f'{k}: {m:.4f}' for k, m in metrics.items())}",
+                    f"{' '*(len(str(epochs))-len(str(n)))+str(n)}/{epochs}",
+                    f"{'█' * int(n / epochs * 30)}{'░' * (30 - int(n / epochs * 30))}", 
+                    f"- loss: {error:.4f} - accuracy: {metrics['accuracy']:.4f}",
                     end="\r" if epoch < epochs - 1 else "\n",
                 )
         return errors
@@ -385,7 +387,7 @@ class NeuNet:
         error = error / len(X_test)
         metrics = self.calculate_metrics(Y_test, Y_pred)
         print(
-            f"Loss -> {error:.4f}, {', '.join(f'{k}: {m:.4f}' for k, m in metrics.items())}"
+            f"Test -> loss: {error:.4f}, {', '.join(f'{k}: {m:.4f}' for k, m in metrics.items())}"
         )
         return error, metrics
 
