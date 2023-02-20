@@ -4,21 +4,21 @@
             "class_name": "Dense",
             "init_args": [
                 2,
-                10
+                20
             ],
             "weights_path": "models/circular3class\\Dense0_weights.npy",
             "biases_path": "models/circular3class\\Dense0_biases.npy"
         },
         {
-            "class_name": "Sigmoid",
+            "class_name": "ReLU",
             "init_args": [
-                10
+                20
             ]
         },
         {
             "class_name": "Dense",
             "init_args": [
-                10,
+                20,
                 3
             ],
             "weights_path": "models/circular3class\\Dense2_weights.npy",
