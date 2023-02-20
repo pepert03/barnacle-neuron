@@ -1,22 +1,23 @@
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 import cv2
+from scipy.signal import convolve2d
 
 # Nupy warnings to errors
 np.seterr(all="raise")
 
 
-def load_image(path, res, grey=False):
+def load_image(path, grey=False):
     """
     Load an png image from a path
     """
     if grey:
-        img = plt.imread(path, format="png")
+        img = plt.imread(path)
         img = img.mean(axis=2)
     else:
-        img = plt.imread(path, format="png")[:, :, 0]
+        img = plt.imread(path)
     img = img / 255
-    img = img.reshape(res, res)
     return img
 
 
@@ -140,3 +141,67 @@ def f1_score(Y_true, Y_pred):
     p = precision(Y_true, Y_pred)
     r = recall(Y_true, Y_pred)
     return 2 * p * r / (p + r)
+
+
+def convolve3d(image, filter_):
+    """Convolves a 3d image with a 3d filter:
+    Image: (H, W, D)
+    Filter: (k, k, D)
+    Returns: (H-k+1, W-k+1)
+    """
+    output = np.zeros(
+        (image.shape[0] - filter_.shape[0] + 1, image.shape[1] - filter_.shape[1] + 1)
+    )
+    for d in range(filter_.shape[2]):
+        output += convolve2d(image[:, :, d], filter_[:, :, d], mode="valid")
+    return output / filter_.shape[2]
+
+
+def convolve4d(image, filter_):
+    """Convolves a 3d image with a 4d filter:
+    Image: (H, W, D)
+    Filter: (k, k, D, N)
+    Returns: (H-k+1, W-k+1, N)
+    """
+
+    output = np.zeros(
+        (
+            image.shape[0] - filter_.shape[0] + 1,
+            image.shape[1] - filter_.shape[1] + 1,
+            filter_.shape[3],
+        )
+    )
+
+    for i in range(filter_.shape[3]):
+        output[:, :, i] = convolve3d(image, filter_[:, :, :, i])
+
+    return output
+
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+im = load_image(os.path.join(parent_dir, "assets", "logo.jpg"))
+# Show image
+# plt.imshow(im)
+# plt.show()
+
+# convolve image with a 3x3x3 filter
+filter_ = np.random.randn(3, 3, 3)
+
+im_conv = convolve3d(im, filter_)
+
+# print(im_conv.shape)
+
+# plt.imshow(im_conv, cmap="gray")
+# plt.show()
+
+# 4d filter
+filter_ = np.random.randn(3, 3, 3, 6)
+
+output = convolve4d(im, filter_)
+
+for i in range(6):
+    plt.subplot(2, 3, i + 1)
+    plt.imshow(output[:, :, i], cmap="gray")
+
+plt.show()

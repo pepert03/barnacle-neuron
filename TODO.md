@@ -1,2 +1,4 @@
-- Relu
 - Bowels bien hecho y generalizado para cnn y fcc
+- CNN
+- Padding Layer
+- Dropout Layer

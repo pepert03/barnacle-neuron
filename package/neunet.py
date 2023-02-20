@@ -3,6 +3,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
+from scipy.signal import convolve
 
 current = os.path.dirname(os.path.realpath(__file__))
 parent = os.path.dirname(current)
@@ -164,6 +165,20 @@ class Dense(TrainableLayer):
         return layer
 
 
+class Convolutional(TrainableLayer):
+    def __init__(self, input_size, output_size, kernel_size) -> None:
+        # Initialize weights and biases between -1 and 1
+        self.weights = (
+            2 * np.random.rand(output_size, input_size[2], kernel_size, kernel_size) - 1
+        )
+        self.biases = 2 * np.random.rand(output_size, 1) - 1
+        self.input_size = input_size
+        self.output_size = output_size
+        self.kernel_size = kernel_size
+        self.last_x = None
+        super().__init__()
+
+
 class Tanh(ActivationLayer):
     def __init__(self, input_size: int) -> None:
         self.input_size = input_size
@@ -209,7 +224,7 @@ class Softmax(ActivationLayer):
 
 
 class ReLU(ActivationLayer):
-    def __init__(self, input_size: int, a = 0) -> None:
+    def __init__(self, input_size: int, a=0) -> None:
         self.input_size = input_size
         self.a = a
         self.last_da = None
@@ -218,7 +233,7 @@ class ReLU(ActivationLayer):
 
     def forward(self, x):
         self.last_da = self.ones.copy()
-        self.last_da[x<0] = self.a 
+        self.last_da[x < 0] = self.a
         return self.last_da * x
 
     def backward(self, error):
