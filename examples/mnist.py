@@ -34,7 +34,7 @@ nn = NeuNet(layers)
 nn.compile(learning_rate=0.01, metrics=["accuracy", "recall", "precision"])
 
 # Train
-errors = nn.fit(X_train, Y_train, 40, verbose=True)
+errors = nn.fit(X_train, Y_train, 50, verbose=True)
 
 # Test
 nn.evaluate(X_test, Y_test)
