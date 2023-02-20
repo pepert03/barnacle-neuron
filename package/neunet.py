@@ -107,6 +107,7 @@ class LossLayer(Layer):
 
 class Dense(TrainableLayer):
     def __init__(self, input_size, output_size) -> None:
+        # Initialize weights and biases between -1 and 1
         self.weights = 2 * np.random.rand(output_size, input_size) - 1
         self.biases = 2 * np.random.rand(output_size, 1) - 1
         self.input_size = input_size
@@ -326,14 +327,24 @@ class NeuNet:
 
         assert self.compiled, "Network not compiled"
 
+        if verbose:
+            os.system("")
+            ANSI_HIDE_CURSOR = "\x1b[?25l"
+            print("Train:", ANSI_HIDE_CURSOR)
+
         # Train the network
         errors = []
+
         for epoch in range(epochs):
+            # Reset error
             error = 0
+
             # Shuffle the data to avoid overfitting
             idx = np.random.permutation(len(X))
+
             # Store Y_pred for each training example
             Y_pred = np.zeros(Y.shape)
+
             # For each training example
             for i, (x, y) in enumerate(zip(X[idx], Y[idx])):
                 x = x.reshape(x.shape[0], 1)
@@ -342,17 +353,25 @@ class NeuNet:
                 self.backward_propagation(y)
                 Y_pred[idx[i]] = y_pred.reshape(y_pred.shape[0])
                 error += e
+
+            # Calculate the error and metrics
             error = error / len(X)
             errors.append(error)
             metrics = self.calculate_metrics(Y, Y_pred)
+
             if verbose:
-                n = epoch + 1
                 print(
-                    f"{' '*(len(str(epochs))-len(str(n)))+str(n)}/{epochs}",
-                    f"{'█' * int(n / epochs * 30)}{'░' * (30 - int(n / epochs * 30))}", 
-                    f"- loss: {error:.4f} - accuracy: {metrics['accuracy']:.4f}",
+                    f"{' '*(len(str(epochs))-len(str(epoch + 1)))+str(epoch + 1)}/{epochs}",
+                    f"{'█' * int((epoch+1) / epochs * 30)}{'░' * (30 - int((epoch+1) / epochs * 30))}",
+                    f"- loss: {error:.4f}",
+                    " - ".join([f"{k}: {v:.4f}" for k, v in metrics.items()]),
                     end="\r" if epoch < epochs - 1 else "\n",
                 )
+
+        if verbose:
+            ANSI_SHOW_CURSOR = "\x1b[?25h"
+            print(ANSI_SHOW_CURSOR, end="")
+
         return errors
 
     def calculate_metrics(self, Y, Y_pred):
@@ -367,28 +386,60 @@ class NeuNet:
         }
         metrics = {}
         for metric_name in self.metrics:
+            if metric_name not in map_metric:
+                print(f"Warning: metric '{metric_name}' not found")
             metric = map_metric[metric_name]
             metrics[metric_name] = metric(Y, Y_pred)
         return metrics
 
-    def evaluate(self, X_test, Y_test, vectorize=True):
+    def evaluate(self, X_test, Y_test, verbose=True):
         """
-        Tests the network on the given data X_test and Y_test using the
+        Evaluates the network on the given data X_test and Y_test using the
         metrics specified in the compile method.
+        Returns the loss of the network and the metrics.
         """
+        if verbose:
+            os.system("")
+            ANSI_HIDE_CURSOR = "\x1b[?25l"
+            print("Test:", ANSI_HIDE_CURSOR)
+
+        # Evaluate the network
         error = 0
         Y_pred = np.zeros(Y_test.shape)
+        N = len(X_test)
+
+        # For each training example
         for i, (x, y) in enumerate(zip(X_test, Y_test)):
+
             x = x.reshape(x.shape[0], 1)
             y = y.reshape(y.shape[0], 1)
             y_pred, e = self.forward_propagation(x, y)
             Y_pred[i] = y_pred.reshape(y_pred.shape[0])
+
             error += e
+
+            if verbose:
+                print(
+                    f"{' '*(len(str(N))-len(str(i + 1)))+str(i + 1)}/{N}",
+                    f"{'█' * int((i+1) / N * 30)}{'░' * (30 - int((i+1) / N * 30))}",
+                    f"- loss: {error/(i+1):.4f}",
+                    end="\r",
+                )
+
+        # Calculate metrics
         error = error / len(X_test)
         metrics = self.calculate_metrics(Y_test, Y_pred)
-        print(
-            f"Test -> loss: {error:.4f}, {', '.join(f'{k}: {m:.4f}' for k, m in metrics.items())}"
-        )
+
+        if verbose:
+            ANSI_SHOW_CURSOR = "\x1b[?25h"
+            print(
+                f"{' '*(len(str(N))-len(str(N)))+str(N)}/{N}",
+                f"{'█' * int((N) / N * 30)}{'░' * (30 - int((N) / N * 30))}",
+                f"- loss: {error:.4f}",
+                " - ".join([f"{k}: {v:.4f}" for k, v in metrics.items()]),
+                ANSI_SHOW_CURSOR,
+            )
+
         return error, metrics
 
     def untrain(self, y, learning_rate=0.1, epochs=1000, error_plot=True):

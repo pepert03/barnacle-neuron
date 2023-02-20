@@ -34,22 +34,22 @@ nn = NeuNet(layers)
 nn.compile(learning_rate=0.01, metrics=["accuracy", "recall", "precision"])
 
 # Train
-errors = nn.fit(X_train, Y_train, 50, verbose=True)
+errors = nn.fit(X_train, Y_train, 100, verbose=True)
 
 # Test
 nn.evaluate(X_test, Y_test)
 
-# Save model
-nn.save(model_path="models/mnist")
+# # Save model
+# nn.save(model_path="models/mnist")
 
-# Visualizations
-fig = plt.figure("MNIST Visualization", figsize=(12, 6))
+# # Visualizations
+# fig = plt.figure("MNIST Visualization", figsize=(12, 6))
 
-fig.suptitle("Visualization of MNIST Clasification")
+# fig.suptitle("Visualization of MNIST Clasification")
 
-# Error plot
-ax = plt.subplot(1, 1, 1)
-ax.set_title("Error")
-ax.plot(errors)
+# # Error plot
+# ax = plt.subplot(1, 1, 1)
+# ax.set_title("Error")
+# ax.plot(errors)
 
-plt.show()
+# plt.show()

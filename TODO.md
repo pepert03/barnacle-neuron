@@ -1,0 +1,2 @@
+- Relu
+- Bowels bien hecho y generalizado para cnn y fcc
