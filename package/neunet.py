@@ -9,12 +9,13 @@ current = os.path.dirname(os.path.realpath(__file__))
 parent = os.path.dirname(current)
 sys.path.append(parent)
 
-from package import utils
+from package.utils import convolve4d
 
 
 class Layer:
     def __init__(self):
-        pass
+        self.input_shape: tuple = None
+        self.output_shape: tuple = None
 
     def wrap_forward(self, func):
         """Decorator to wrap forward methods. Debugging purposes"""
@@ -63,7 +64,7 @@ class Layer:
     @classmethod
     def load_dict(cls, d):
         """Loads itself from the dictionary returned by save_dict"""
-        return cls(*d["init_args"])
+        return cls()
 
 
 class TrainableLayer(Layer):
@@ -78,16 +79,10 @@ class ActivationLayer(Layer):
         super().__init__()
         self.is_trainable = False
         self.is_loss = False
-        self.output_size = self.input_size
 
-    def save_dict(self, **_):
-        """Saves itself and returns a dictionary with the information needed to recreate it"""
-        return {"class_name": self.__class__.__name__, "init_args": [self.input_size]}
-
-    @classmethod
-    def load_dict(cls, d):
-        """Loads itself from the dictionary returned by save_dict"""
-        return cls(*d["init_args"])
+    def set_shapes(self, input_shape):
+        self.input_shape = input_shape
+        self.output_shape = input_shape
 
 
 class LossLayer(Layer):
@@ -96,28 +91,27 @@ class LossLayer(Layer):
         self.is_trainable = False
         self.is_loss = True
 
-    def save_dict(self, **_):
-        """Saves itself and returns a dictionary with the information needed to recreate it"""
-        return {"class_name": self.__class__.__name__, "init_args": [self.input_size]}
-
-    @classmethod
-    def load_dict(cls, d):
-        """Loads itself from the dictionary returned by save_dict"""
-        return cls(*d["init_args"])
+    def set_shapes(self, input_shape):
+        self.input_shape = input_shape
+        self.output_shape = (1, 1)
 
 
 class Dense(TrainableLayer):
-    def __init__(self, input_size, output_size) -> None:
+    def __init__(self, output_size: int, input_size: int = None) -> None:
+        super().__init__()
         # Initialize weights and biases between -1 and 1
         self.weights = 2 * np.random.rand(output_size, input_size) - 1
         self.biases = 2 * np.random.rand(output_size, 1) - 1
-        self.input_size = input_size
-        self.output_size = output_size
+        self.input_shape = (input_size, 1)
+        self.output_shape = (output_size, 1)
         self.last_x = None
-        super().__init__()
+
+    def set_shapes(self, input_shape):
+        self.input_shape = input_shape
+        self.output_shape = (self.weights.shape[0], 1)
 
     def forward(self, x):
-        assert x.shape[0] == self.input_size, "Wrong dimension of input x"
+        assert x.shape[0] == self.input_shape[0], "Wrong dimension of input x"
         self.last_x = x
         return np.dot(self.weights, x) + self.biases
 
@@ -149,7 +143,7 @@ class Dense(TrainableLayer):
 
         return {
             "class_name": self.__class__.__name__,
-            "init_args": [self.input_size, self.output_size],
+            "init_args": [self.output_shape[0], self.input_shape[0]],
             "weights_path": weights_path,
             "biases_path": biases_path,
         }
@@ -166,22 +160,99 @@ class Dense(TrainableLayer):
 
 
 class Convolutional(TrainableLayer):
-    def __init__(self, input_size, output_size, kernel_size) -> None:
-        # Initialize weights and biases between -1 and 1
-        self.weights = (
-            2 * np.random.rand(output_size, input_size[2], kernel_size, kernel_size) - 1
-        )
-        self.biases = 2 * np.random.rand(output_size, 1) - 1
-        self.input_size = input_size
-        self.output_size = output_size
-        self.kernel_size = kernel_size
-        self.last_x = None
+    def __init__(
+        self, n_kernels: int, kernel_shape: int | tuple, input_shape: tuple = None
+    ):
         super().__init__()
+
+        self.n_kernels = n_kernels
+
+        # If input_shape is not None, we can calculate the output shape
+        if input_shape:
+            if isinstance(kernel_shape, int):
+                kernel_shape = (kernel_shape, kernel_shape, input_shape[2], n_kernels)
+            elif len(kernel_shape) == 2:
+                kernel_shape = (
+                    kernel_shape[0],
+                    kernel_shape[1],
+                    input_shape[2],
+                    n_kernels,
+                )
+            else:
+                kernel_shape = (
+                    kernel_shape[0],
+                    kernel_shape[1],
+                    kernel_shape[2],
+                    n_kernels,
+                )
+
+            self.kernel_shape = kernel_shape
+            self.input_shape = input_shape
+
+            self.output_shape = (
+                input_shape[1] - self.kernel_shape[1] + 1,
+                input_shape[2] - self.kernel_shape[2] + 1,
+                self.n_kernels * (input_shape[2] - self.kernel_shape[2] + 1),
+            )
+
+            # Initialize weights and biases
+            self.weights = np.random.randn(*kernel_shape)
+            self.biases = np.random.randn(*self.output_shape)
+
+        else:
+            # If input_shape is None, we can't calculate the output shape
+            if isinstance(kernel_shape, int):
+                self.kernel_shape = (kernel_shape, kernel_shape, 1)
+            elif len(kernel_shape) == 2:
+                self.kernel_shape = (kernel_shape[0], kernel_shape[1], 1)
+            else:
+                self.kernel_shape = (kernel_shape[0], kernel_shape[1], kernel_shape[2])
+
+            self.output_shape = None
+            self.input_shape = None
+
+            self.weights = None
+            self.biases = None
+
+    def set_shapes(self, input_shape):
+        self.input_shape = input_shape
+
+        if isinstance(self.kernel_shape, int):
+            self.kernel_shape = (self.kernel_shape, self.kernel_shape, input_shape[2])
+        elif len(self.kernel_shape) == 2:
+            self.kernel_shape = (
+                self.kernel_shape[0],
+                self.kernel_shape[1],
+                input_shape[2],
+            )
+        else:
+            self.kernel_shape = (
+                self.kernel_shape[0],
+                self.kernel_shape[1],
+                self.kernel_shape[2],
+            )
+
+        self.output_shape = (
+            input_shape[1] - self.kernel_shape[1] + 1,
+            input_shape[2] - self.kernel_shape[2] + 1,
+            self.n_kernels * (input_shape[2] - self.kernel_shape[2] + 1),
+        )
+
+        # Initialize weights and biases
+        self.weights = np.random.randn(*self.kernel_shape)
+        self.biases = np.random.randn(*self.output_shape)
+
+    def forward(self, x):
+        # x vive en (h,w,d)
+        # kernel en (hk,wk,dk,nk)
+        return convolve4d(x, self.weights) + self.biases
+
+    def backward(self, derror):
+        pass
 
 
 class Tanh(ActivationLayer):
-    def __init__(self, input_size: int) -> None:
-        self.input_size = input_size
+    def __init__(self) -> None:
         self.last_a = None
         super().__init__()
 
@@ -194,8 +265,7 @@ class Tanh(ActivationLayer):
 
 
 class Sigmoid(ActivationLayer):
-    def __init__(self, input_size: int) -> None:
-        self.input_size = input_size
+    def __init__(self) -> None:
         self.last_a = None
         super().__init__()
 
@@ -208,8 +278,7 @@ class Sigmoid(ActivationLayer):
 
 
 class Softmax(ActivationLayer):
-    def __init__(self, input_size: int) -> None:
-        self.input_size = input_size
+    def __init__(self) -> None:
         self.last_a = None
         super().__init__()
 
@@ -224,11 +293,10 @@ class Softmax(ActivationLayer):
 
 
 class ReLU(ActivationLayer):
-    def __init__(self, input_size: int, a=0) -> None:
-        self.input_size = input_size
+    def __init__(self, a=0) -> None:
         self.a = a
         self.last_da = None
-        self.ones = np.ones((self.input_size, 1))
+        self.ones = np.ones(self.input_shape)
         super().__init__()
 
     def forward(self, x):
@@ -241,8 +309,7 @@ class ReLU(ActivationLayer):
 
 
 class CrossEntropy(LossLayer):
-    def __init__(self, input_size: int) -> None:
-        self.input_size = input_size
+    def __init__(self) -> None:
         self.last_x = None
         super().__init__()
 
@@ -255,8 +322,7 @@ class CrossEntropy(LossLayer):
 
 
 class BinaryCrossEntropy(LossLayer):
-    def __init__(self, input_size: int) -> None:
-        self.input_size = input_size
+    def __init__(self) -> None:
         self.last_x = None
         super().__init__()
 
@@ -266,12 +332,11 @@ class BinaryCrossEntropy(LossLayer):
 
     def backward(self, y):
         x = self.last_x
-        return (x - y) / (x * (1 - x) * self.input_size)
+        return (x - y) / (x * (1 - x) * self.input_shape[0])
 
 
 class MSE(LossLayer):
-    def __init__(self, input_size: int) -> None:
-        self.input_size = input_size
+    def __init__(self) -> None:
         self.last_x = None
         super().__init__()
 
@@ -281,7 +346,7 @@ class MSE(LossLayer):
 
     def backward(self, y):
         x = self.last_x
-        return 2 * (x - y) / self.input_size
+        return 2 * (x - y) / self.input_shape[0]
 
 
 class NeuNet:
@@ -316,6 +381,13 @@ class NeuNet:
             layer.id = i
             if layer.is_trainable:
                 layer.learning_rate = learning_rate
+
+        # Initialize input shapes
+        assert (
+            self.layers[0].input_shape is not None
+        ), "You must specify the input shape of the first layer"
+        for i in range(1, len(self.layers)):
+            self.layers[i].set_shapes(self.layers[i - 1].output_shape)
 
         # Metrics
         self.metrics = metrics
@@ -442,7 +514,6 @@ class NeuNet:
 
         # For each training example
         for i, (x, y) in enumerate(zip(X_test, Y_test)):
-
             x = x.reshape(x.shape[0], 1)
             y = y.reshape(y.shape[0], 1)
             y_pred, e = self.forward_propagation(x, y)

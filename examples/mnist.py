@@ -22,9 +22,9 @@ X_train, X_test, Y_train, Y_test = train_test_split(
 
 # Create layers
 layers = [
-    Dense(784, 10),
-    Softmax(10),
-    CrossEntropy(10),
+    Dense(10, input_size=784),
+    Softmax(),
+    CrossEntropy(),
 ]
 
 # Create model
@@ -40,7 +40,7 @@ errors = nn.fit(X_train, Y_train, 100, verbose=True)
 nn.evaluate(X_test, Y_test)
 
 # # Save model
-# nn.save(model_path="models/mnist")
+nn.save(model_path="models/mnist")
 
 # # Visualizations
 # fig = plt.figure("MNIST Visualization", figsize=(12, 6))

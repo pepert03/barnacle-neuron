@@ -14,10 +14,10 @@ Y = np.array([[0], [1], [1], [0]])
 # Network Arquitecture
 layers = [
     Dense(2, 3),
-    Tanh(3),
-    Dense(3, 1),
-    Sigmoid(1),
-    MSE(1),
+    Tanh(),
+    Dense(1),
+    Sigmoid(),
+    MSE(),
 ]
 
 # Create Neural Network

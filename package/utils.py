@@ -143,65 +143,80 @@ def f1_score(Y_true, Y_pred):
     return 2 * p * r / (p + r)
 
 
-def convolve3d(image, filter_):
+def convolve3d(image, kernel):
     """Convolves a 3d image with a 3d filter:
-    Image: (H, W, D)
-    Filter: (k, k, D)
-    Returns: (H-k+1, W-k+1)
+    Image: (H1, W1, D1) (D1>=D2)
+    Kernel: (H2, W2, D2)
+    Returns: (H1-H2+1, H1-H2+1, D1-D2+1)
     """
-    output = np.zeros(
-        (image.shape[0] - filter_.shape[0] + 1, image.shape[1] - filter_.shape[1] + 1)
-    )
-    for d in range(filter_.shape[2]):
-        output += convolve2d(image[:, :, d], filter_[:, :, d], mode="valid")
-    return output / filter_.shape[2]
-
-
-def convolve4d(image, filter_):
-    """Convolves a 3d image with a 4d filter:
-    Image: (H, W, D)
-    Filter: (k, k, D, N)
-    Returns: (H-k+1, W-k+1, N)
-    """
-
     output = np.zeros(
         (
-            image.shape[0] - filter_.shape[0] + 1,
-            image.shape[1] - filter_.shape[1] + 1,
-            filter_.shape[3],
+            image.shape[0] - kernel.shape[0] + 1,
+            image.shape[1] - kernel.shape[1] + 1,
+            image.shape[2] - kernel.shape[2] + 1,
         )
     )
 
-    for i in range(filter_.shape[3]):
-        output[:, :, i] = convolve3d(image, filter_[:, :, :, i])
+    for d1 in range(image.shape[2] - kernel.shape[2] + 1):
+        for d2 in range(kernel.shape[2]):
+            output[:, :, d1] += convolve2d(
+                image[:, :, d1 + d2], kernel[:, :, d2], mode="valid"
+            )
 
     return output
 
 
-current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(current_dir)
-im = load_image(os.path.join(parent_dir, "assets", "logo.jpg"))
+def convolve4d(image, kernels):
+    """Convolves a 3d image with a 4d filter:
+    Image: (H1, W1, D1)
+    Filter: (H2, W2, D2, N)
+    Returns: (H1-H2+1, W1-W2+1,(D1-D2+1)*N)
+    """
+
+    D = image.shape[2] - kernels.shape[2] + 1
+
+    output = np.zeros(
+        (
+            image.shape[0] - kernels.shape[0] + 1,
+            image.shape[1] - kernels.shape[1] + 1,
+            kernels.shape[3] * D,
+        )
+    )
+
+    for i in range(0, output.shape[2], D):
+        output[:, :, i : i + D] = convolve3d(image, kernels[:, :, :, i // D])
+
+    return output
+
+
+# current_dir = os.path.dirname(os.path.abspath(__file__))
+# parent_dir = os.path.dirname(current_dir)
+# im = load_image(os.path.join(parent_dir, "assets", "logo.jpg"))
 # Show image
 # plt.imshow(im)
 # plt.show()
 
 # convolve image with a 3x3x3 filter
-filter_ = np.random.randn(3, 3, 3)
+# print(im[:5,:5,:])
+# filter_ = np.random.rand(3, 3, 1)
+# print(filter_)
 
-im_conv = convolve3d(im, filter_)
+# im_conv = convolve3d(im, filter_)
 
 # print(im_conv.shape)
 
-# plt.imshow(im_conv, cmap="gray")
+# plt.imshow(im_conv)
 # plt.show()
 
 # 4d filter
-filter_ = np.random.randn(3, 3, 3, 6)
+# filter_ = np.random.randn(3, 3, 1, 6)
 
-output = convolve4d(im, filter_)
+# output = convolve4d(im,filter_)
 
-for i in range(6):
-    plt.subplot(2, 3, i + 1)
-    plt.imshow(output[:, :, i], cmap="gray")
+# print(output.shape)
 
-plt.show()
+# for i in range(6):
+#     plt.subplot(2, 3, i + 1)
+#     plt.imshow(output[:, :, i:i+3], cmap="gray")
+
+# plt.show()
